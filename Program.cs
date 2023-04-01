@@ -12,6 +12,9 @@ const string connectionString = "Server=DESKTOP-7V86B4M;Database=MeuFeudo;Integr
 //estações não se alteram. alterar membros/produtos/feudos
 //os métodos de exlusão só podem ser feito em: membros 
 
+
+
+//maneira de raciocinio diferente para criar com ADO.NET
 // using (var conexaoBD = new SqlConnection(connectionString))
 // {
 //     conexaoBD.Open();
@@ -29,43 +32,18 @@ const string connectionString = "Server=DESKTOP-7V86B4M;Database=MeuFeudo;Integr
 //     }
 // }
 
-static void RetornarProdutos()
-{
-    using (var conexaoBD = new SqlConnection(connectionString))
-    {
-        conexaoBD.Open();
-    
-        
-        //cria-se o comando sql
-        string pesquisar = @"Select * FROM Produtos";
-        SqlCommand comando = new SqlCommand(pesquisar, conexaoBD);
-        
-        //puxa o conjunto de dados do banco de dados para um DataSet. O método .Fill preenche o dataset com os dados retornado pelo comando sql
-        SqlDataAdapter adapter = new SqlDataAdapter(comando);
-        DataSet dataSet = new DataSet();
-        adapter.Fill(dataSet);
-
-        
-        foreach (DataRow row in dataSet.Tables[0].Rows)
-        {
-        Console.WriteLine($"Produto: {row["Produto"]} //// Identificador (ID): {row ["ID"]}");
-        
-        }
-
-    
-    }
-}
 
 
-// RetornarProdutos();
+
+
 Menu();
-
 
 static void Menu()
 {
     Console.WriteLine("Bom dia, Senhor Feudal. O que gostaria de fazer?");
     Console.WriteLine("Espero que tenha aprendido com os monges a ler, veja as opções abaixo:");
     Console.WriteLine("Para cadastrar, excluir ou modificar um produto, digite: PRODUTO");
+    Console.WriteLine("Para cadastrar, excluir ou modificar um feudo, digite: FEUDO");
     
 
     Console.WriteLine("Se você está não quer continuar aqui, digite: SAIR");
@@ -74,8 +52,9 @@ static void Menu()
     if(option == null)
     {
         Console.WriteLine("Por gentileza, não envie a resposta vazia");
-        Console.WriteLine("Redirecionando para o menu de opcões...");
+        Console.WriteLine("Redirecionando para o menu de opcões atual...");
         Thread.Sleep(3000);
+        Console.Clear();
         Menu();
     }
     
@@ -84,22 +63,84 @@ static void Menu()
     switch (option)
     {
         case "PRODUTO":
+        Console.Clear();
         MenuProduto();
+        break;
+        case "FEUDO":
+        Console.Clear();
+        MenuFeudo();
         break;
         case "SAIR":
         Console.WriteLine("Saindo...");
         Thread.Sleep(3000);
+        Console.Clear();
         Environment.Exit(0);
         break;
         default: 
         Console.WriteLine("Por gentileza, inserir uma opção válida");
         Console.WriteLine("Redirecionando para o menu de opcões...");
         Thread.Sleep(3000);
+        Console.Clear();
         Menu();
         break;
         
     }
 }
+
+static void MenuFeudo()
+{
+    Console.WriteLine("Bom dia, Senhor Feudal. O que gostaria de fazer com as informações dos seus feudos?");
+    Console.WriteLine("Espero que tenha aprendido com os monges a ler, veja as opções abaixo:");
+    Console.WriteLine("Para cadastrar um novo feudo, digite: CADASTRAR");
+    Console.WriteLine("Para alterar um feudo, digite: MODIFICAR");
+    
+    Console.WriteLine("Se você não quer continuar aqui, digite: SAIR");
+    var option = Console.ReadLine();
+
+    if(option == null)
+    {
+        Console.WriteLine("Por gentileza, não envie a resposta vazia");
+        Console.WriteLine("Redirecionando para o menu de opcões atual...");
+        Thread.Sleep(3000);
+        Console.Clear();
+        MenuFeudo();
+    }
+    
+    option = option.ToUpper();
+    int id;
+    switch (option)
+    {
+        case "CADASTRAR":
+        Console.Clear();
+        CriarFeudo(); 
+        break;
+        case "MODIFICAR":
+        Console.Clear();
+        Console.WriteLine("Escolha o feudo e digite o ID que identifica ele");
+        RetornarFeudos();
+        Console.WriteLine("Pode digitar:");
+        id = int.Parse(Console.ReadLine());
+        var feudoModificado = ModificarFeudoModelo();
+        ModificarFeudo(id,feudoModificado);
+        break;
+        case "SAIR":
+        Console.WriteLine("Saindo...");
+        Thread.Sleep(3000);
+        Console.Clear();
+        Environment.Exit(0);
+        break;
+        default: 
+        Console.WriteLine("Por gentileza, inserir uma opção válida");
+        Console.WriteLine("Redirecionando para o menu de opcões atual...");
+        Thread.Sleep(3000);
+        Console.Clear();
+        MenuFeudo();
+        break;
+        
+    }
+}
+
+
 
 static void MenuProduto()
 {
@@ -108,7 +149,7 @@ static void MenuProduto()
     Console.WriteLine("Para cadastrar, digite: CADASTRAR");
     Console.WriteLine("Para alterar um produto, digite: Modificar");
     
-    Console.WriteLine("Se você está não quer continuar aqui, digite: SAIR");
+    Console.WriteLine("Se você não quer continuar aqui, digite: SAIR");
     var option = Console.ReadLine();
 
     if(option == null)
@@ -116,6 +157,7 @@ static void MenuProduto()
         Console.WriteLine("Por gentileza, não envie a resposta vazia");
         Console.WriteLine("Redirecionando para o menu de opcões...");
         Thread.Sleep(3000);
+        Console.Clear();
         MenuProduto();
     }
     
@@ -137,21 +179,24 @@ static void MenuProduto()
         case "SAIR":
         Console.WriteLine("Saindo...");
         Thread.Sleep(3000);
+        Console.Clear();
         Environment.Exit(0);
         break;
         default: 
         Console.WriteLine("Por gentileza, inserir uma opção válida");
         Console.WriteLine("Redirecionando para o menu de opcões...");
         Thread.Sleep(3000);
-        Menu();
+        MenuProduto();
         break;
         
     }
 }
 
+
+
 static void CriarProduto()
 {
-    var produto = new Produtos();
+    var produto = new Produto();
 
     Console.WriteLine("Área de criação de produtos");
     Console.WriteLine("Digite o nome do produto abaixo:");
@@ -161,17 +206,33 @@ static void CriarProduto()
   
 }
 
-static void ModificarProduto(int id, Produtos produto)
+
+
+static void CriarFeudo()
+{
+    var feudo = new MeuFeudo();
+
+    Console.WriteLine("Área de criação de produtos");
+    Console.WriteLine("Digite o nome do produto abaixo:");
+    feudo.Nome = Console.ReadLine();
+
+    SalvarFeudo(feudo);
+    
+}
+
+static void ModificarProduto(int id, Produto produto)
 {
 
-    
-
+    // if (produto == null)
+    // {
+    //     throw new ApplicationException
+    // }
 
     using (var conexaoBD = new SqlConnection(connectionString))
     {
     conexaoBD.Open();
 
-    string pesquisar = @"Select * FROM Produtos";
+    string pesquisar = @"SELECT * FROM Produtos";
     SqlCommand comandando = new SqlCommand(pesquisar, conexaoBD);
         
     DataSet dataSet = new DataSet();
@@ -192,24 +253,74 @@ static void ModificarProduto(int id, Produtos produto)
 
         int linhasModificadas = comando.ExecuteNonQuery();
 
-        Console.WriteLine(linhasModificadas.ToString(), "criado");
+        Retorno(linhasModificadas, " Modificado");
     }
     else
     {
     Console.WriteLine("O ID passado não existe na tabela. Você faltou as aulas com os monges");
+    Console.WriteLine("Redirecionando para o menu atual...");
+    Thread.Sleep(3000);
+    Console.Clear();
+    MenuProduto();
     }
 
     }
 }
 
-static Produtos ModificarProdutoModelo()
+//método com padrão diferente do de produto, melhorado.
+static void ModificarFeudo(int id, MeuFeudo nome)
 {
-    var produto = new Produtos();
+    //codigo refatorado com a exclusão do uso do DataSet, simplificação na consulta da existência de um dado.
+    using (var conexaoBD = new SqlConnection(connectionString))
+    {
+        conexaoBD.Open();
+        
+        string pesquisar = @"SELECT COUNT(*) FROM MeusFeudos WHERE ID = @id";
+        SqlCommand comandoPesquisa = new SqlCommand(pesquisar, conexaoBD);
+        comandoPesquisa.Parameters.AddWithValue("@ID", id);
+        
+        int qtdRegistros = (int)comandoPesquisa.ExecuteScalar();
+        if (qtdRegistros == 0)
+        {
+            Console.WriteLine("O ID passado não existe na tabela. Você faltou as aulas com os monges");
+            Console.WriteLine("Redirecionando para o menu atual...");
+            Thread.Sleep(3000);
+            Console.Clear();
+            MenuFeudo();
+            return;
+        }
+        
+        string modificar = @"UPDATE MeusFeudos SET Nome = @nome WHERE ID = @id";
+        SqlCommand comandoModificar = new SqlCommand(modificar, conexaoBD);
+        comandoModificar.Parameters.AddWithValue("@Nome", nome.Nome);
+        comandoModificar.Parameters.AddWithValue("@ID", id);
+
+        int linhasModificadas = comandoModificar.ExecuteNonQuery();
+
+        Retorno(linhasModificadas, "Modificadas");
+    }
+}
+
+
+static Produto ModificarProdutoModelo()
+{
+    var produto = new Produto();
     Console.WriteLine("Olá, Senhor Feudal. Iremos modificar o produto agora");
     Console.WriteLine("Por gentileza, escreva novo nome para o produto");
     produto.NomeDoProduto = Console.ReadLine();
     return produto;
 }
+
+static MeuFeudo ModificarFeudoModelo()
+{
+    var feudo = new MeuFeudo();
+    Console.WriteLine("Olá, Senhor Feudal. Iremos modificar o feudo agora");
+    Console.WriteLine("Por gentileza, escreva novo nome para o feudo");
+    feudo.Nome = Console.ReadLine();
+    return feudo;
+}
+
+
 
 static void Deletar(int id)
 {
@@ -225,22 +336,92 @@ static void Deletar(int id)
 }
 
 
-static void SalvarProduto(Produtos produto)
+
+static void SalvarProduto(Produto produto)
 {
 
     using (var conexaoBD = new SqlConnection(connectionString))
     {
-    conexaoBD.Open();
+        conexaoBD.Open();
         string insercao = @"INSERT INTO Produtos(Produto) VALUES(@produto)";
         SqlCommand comando = new SqlCommand(insercao, conexaoBD);
         comando.Parameters.Add(new SqlParameter("@Produto", produto.NomeDoProduto));
 
         var linhasSalvas = comando.ExecuteNonQuery();
 
-        Console.WriteLine(linhasSalvas.ToString(), "criado");
+        Retorno(linhasSalvas, "criado");
     }
-
 }
+
+static void SalvarFeudo(MeuFeudo nome)
+{
+
+    using (var conexaoBD = new SqlConnection(connectionString))
+    {
+        conexaoBD.Open();
+        string insercao = @"INSERT INTO MeusFeudos(Nome) VALUES(@nome)";
+        SqlCommand comando = new SqlCommand(insercao, conexaoBD);
+        comando.Parameters.Add(new SqlParameter("@Nome", nome.Nome));
+
+        var linhasSalvas = comando.ExecuteNonQuery();
+
+        Retorno(linhasSalvas, "criado");
+    }
+}
+
+static void RetornarFeudos()
+{
+    using (var conexaoBD = new SqlConnection(connectionString))
+    {
+        
+        //cria-se o comando sql
+        string pesquisar = @"SELECT * FROM MeusFeudos";
+        SqlCommand comando = new SqlCommand(pesquisar, conexaoBD);
+        
+        //puxa o conjunto de dados do banco de dados para um DataSet. O método .Fill preenche o dataset com os dados retornado pelo comando sql
+        SqlDataAdapter adapter = new SqlDataAdapter(comando);
+        DataSet dataSet = new DataSet();
+        adapter.Fill(dataSet);
+        
+        
+        foreach (DataRow row in dataSet.Tables[0].Rows)
+        {
+        Console.WriteLine($"Feudo: {row["Nome"]} //// Identificador (ID): {row ["ID"]}");
+        
+        }
+
+    
+    }
+}
+
+
+
+static void RetornarProdutos()
+{
+    using (var conexaoBD = new SqlConnection(connectionString))
+    {
+        
+        //cria-se o comando sql
+        string pesquisar = @"SELECT * FROM Produtos";
+        SqlCommand comando = new SqlCommand(pesquisar, conexaoBD);
+        
+        //puxa o conjunto de dados do banco de dados para um DataSet. O método .Fill preenche o dataset com os dados retornado pelo comando sql
+        SqlDataAdapter adapter = new SqlDataAdapter(comando);
+        DataSet dataSet = new DataSet();
+        adapter.Fill(dataSet);
+        
+        
+        foreach (DataRow row in dataSet.Tables[0].Rows)
+        {
+        Console.WriteLine($"Produto: {row["Produto"]} //// Identificador (ID): {row ["ID"]}");
+        
+        }
+
+    
+    }
+}
+
+
 
 static void Retorno(int linhasAfetadas, string foiFeitoOque)
 {
