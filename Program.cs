@@ -46,6 +46,7 @@ static void Menu()
     Console.WriteLine("Para cadastrar ou modificar um feudo, digite: FEUDO");
     Console.WriteLine("Se você quer extinguir uma família por inteiro, digite: BANIR");
     Console.WriteLine("Para cadastrar ou modificar uma família, digite: FAMILIA");
+    Console.WriteLine("Para cadastrar, deletar ou modificar um membro, digite: MEMBRO");
 
     
 
@@ -80,6 +81,10 @@ static void Menu()
         case "FAMILIA":
         Console.Clear();
         MenuFamilia();
+        break;
+        case "MEMBRO":
+        Console.Clear();
+        MenuMembro();
         break;
         case "SAIR":
         Console.WriteLine("Saindo...");
@@ -201,6 +206,63 @@ static void MenuProduto()
     }
 }
 
+static void MenuMembro()
+{
+    Console.WriteLine("Bom dia, Senhor Feudal. O que gostaria de fazer com os membros?");
+    Console.WriteLine("Espero que tenha aprendido com os monges a ler, veja as opções abaixo:");
+    Console.WriteLine("Para cadastrar, digite: CADASTRAR");
+    Console.WriteLine("Para alterar um membro, digite: Modificar");
+    Console.WriteLine("Para excluir um, digite: EXCLUIR");
+    
+    Console.WriteLine("Se você não quer continuar aqui, digite: SAIR");
+    var option = Console.ReadLine();
+
+    if(option == null)
+    {
+        Console.WriteLine("Por gentileza, não envie a resposta vazia");
+        Console.WriteLine("Redirecionando para o menu de opcões...");
+        Thread.Sleep(3000);
+        Console.Clear();
+        MenuProduto();
+    }
+    
+    option = option.ToUpper();
+    int id;
+    switch (option)
+    {
+        case "CADASTRAR":
+        CriarMembro();
+        break;
+        case "MODIFICAR":
+        Console.WriteLine("Escolha o membro e digite o ID que identifica ele");
+        RetornarMembros();
+        Console.WriteLine("Pode digitar:");
+        id = int.Parse(Console.ReadLine());
+        var membroModificado = ModificarMembroModelo();
+        ModificarMembro(id,membroModificado);
+        break;
+        case "EXCLUIR":
+        Console.WriteLine("Escolha o membro a ser deletado e digite o ID que identifica ele");
+        RetornarMembros();
+        Console.WriteLine("Pode digitar:");
+        id = int.Parse(Console.ReadLine());
+        DeletarMembro(id);
+        break;
+        case "SAIR":
+        Console.WriteLine("Saindo...");
+        Thread.Sleep(3000);
+        Console.Clear();
+        Environment.Exit(0);
+        break;
+        default: 
+        Console.WriteLine("Por gentileza, inserir uma opção válida");
+        Console.WriteLine("Redirecionando para o menu de opcões...");
+        Thread.Sleep(3000);
+        MenuProduto();
+        break;
+        
+    }
+}
 
 static void MenuExtinguir()
 {
@@ -325,6 +387,20 @@ static void CriarFeudo()
     
 }
 
+static void CriarMembro()
+{
+    var membro = new Membro();
+
+    Console.WriteLine("Área de inserção de Membros");
+    Console.WriteLine("Digite o nome do membro abaixo:");
+    membro.Nome = Console.ReadLine();
+    Console.WriteLine("Escolha a família abaixo e digite seu ID:");
+    RetornarFamilias();
+    membro.Familia = int.Parse(Console.ReadLine());
+
+    SalvarMembro(membro);
+    
+}
 
 static void CriarFamilia()
 {
@@ -450,6 +526,54 @@ static void ModificarFamilia(int id, Familia nomeFamilia)
     }
 }
 
+static void ModificarMembro(int id, Membro membro)
+{
+    //codigo refatorado com a exclusão do uso do DataSet, simplificação na consulta da existência de um dado.
+    using (var conexaoBD = new SqlConnection(connectionString))
+    {
+        conexaoBD.Open();
+        
+        string pesquisar = @$"SELECT COUNT(*) FROM Membros WHERE ID = @id";
+        SqlCommand comandoPesquisa = new SqlCommand(pesquisar, conexaoBD);
+        comandoPesquisa.Parameters.AddWithValue("@id", id);
+        
+        int qtdRegistros = (int)comandoPesquisa.ExecuteScalar();
+        if (qtdRegistros == 0)
+        {
+            Console.WriteLine("O ID passado não existe na tabela. Você faltou as aulas com os monges");
+            Console.WriteLine("Redirecionando para o menu atual...");
+            Thread.Sleep(3000);
+            Console.Clear();
+            MenuMembro();
+        }
+
+        string pesquisa = @$"SELECT COUNT(*) FROM Familias WHERE ID = @identificador";
+        SqlCommand comandoPesquisar = new SqlCommand(pesquisar, conexaoBD);
+        comandoPesquisa.Parameters.AddWithValue("@identificador", membro.Familia);
+        
+        int qtdRegistro = (int)comandoPesquisa.ExecuteScalar();
+        if (qtdRegistros == 0)
+        {
+            Console.WriteLine("O ID passado não existe na tabela. Você faltou as aulas com os monges");
+            Console.WriteLine("Redirecionando para o menu atual...");
+            Thread.Sleep(3000);
+            Console.Clear();
+            MenuMembro();
+        }
+
+        
+        string modificar = @"UPDATE Membros SET Nome = @nome, Familia = @familia WHERE ID = @identificado";
+        SqlCommand comandoModificar = new SqlCommand(modificar, conexaoBD);
+        comandoModificar.Parameters.AddWithValue("@nome", membro.Nome);
+        comandoModificar.Parameters.AddWithValue("@familia", membro.Familia);
+        comandoModificar.Parameters.AddWithValue("@identificado", id);
+
+        int linhasModificadas = comandoModificar.ExecuteNonQuery();
+
+        Retorno(linhasModificadas, "Modificadas");
+    }
+}
+
 static Familia ModificarFamiliaModelo()
 {
     var familia = new Familia();
@@ -457,6 +581,19 @@ static Familia ModificarFamiliaModelo()
     Console.WriteLine("Por gentileza, escreva novo nome");
     familia.NomeDaFamilia = Console.ReadLine();
     return familia;
+}
+
+static Membro ModificarMembroModelo()
+{
+    var membro = new Membro();
+    Console.WriteLine("Olá, Senhor Feudal. Iremos modificar um membro agora");
+    Console.WriteLine("Por gentileza, escreva novo nome");
+    membro.Nome = Console.ReadLine();
+    Console.WriteLine("Escolha a família abaixo para mudar e digite seu ID:");
+    RetornarFamilias();
+    membro.Familia = int.Parse(Console.ReadLine());
+
+    return membro;
 }
 
 
@@ -493,6 +630,19 @@ static MeuFeudo ModificarFeudoModelo()
 //     }
 // }
 
+static void DeletarMembro(int id)
+{
+    
+    using (var conexaoBD = new SqlConnection(connectionString))
+    {
+    conexaoBD.Open();
+    string excluir = @$"DELETE FROM Membros WHERE ID = {id}";
+    SqlCommand comando = new SqlCommand(excluir, conexaoBD);
+
+    int linhaExcluida = comando.ExecuteNonQuery();
+    }
+}
+
 //erro resolvido com interpolação
 static void ExtinguirFamilia(int id)
 {
@@ -527,14 +677,13 @@ static void ExtinguirFamilia(int id)
 }
 
 
-
 static void SalvarProduto(Produto produto)
 {
 
     using (var conexaoBD = new SqlConnection(connectionString))
     {
         conexaoBD.Open();
-        string insercao = @"INSERT INTO Produtos(Produto) VALUES(@produto)";
+        string insercao = @"INSERT INTO Produtos(Produto) VALUES(@Produto)";
         SqlCommand comando = new SqlCommand(insercao, conexaoBD);
         comando.Parameters.Add(new SqlParameter("@Produto", produto.NomeDoProduto));
 
@@ -549,7 +698,7 @@ static void SalvarFeudo(MeuFeudo nome)
     using (var conexaoBD = new SqlConnection(connectionString))
     {
         conexaoBD.Open();
-        string insercao = @"INSERT INTO MeusFeudos(Nome) VALUES(@nome)";
+        string insercao = @"INSERT INTO MeusFeudos(Nome) VALUES(@Nome)";
         SqlCommand comando = new SqlCommand(insercao, conexaoBD);
         comando.Parameters.Add(new SqlParameter("@Nome", nome.Nome));
 
@@ -574,6 +723,37 @@ static void SalvarFamilia(Familia nome)
     }
 }
 
+static void SalvarMembro(Membro membro)
+{
+    using (var conexaoBD = new SqlConnection(connectionString))
+    {
+        
+        conexaoBD.Open();
+        
+        string pesquisar = @"SELECT COUNT(*) FROM Familias WHERE ID = @familia";
+        SqlCommand comandoPesquisa = new SqlCommand(pesquisar, conexaoBD);
+        comandoPesquisa.Parameters.AddWithValue("@familia", membro.Familia);
+        
+        int qtdRegistros = (int)comandoPesquisa.ExecuteScalar();
+        if (qtdRegistros == 0)
+        {
+            Console.WriteLine("O ID passado não existe na tabela. Você faltou as aulas com os monges");
+            Console.WriteLine("Redirecionando para o menu atual...");
+            Thread.Sleep(3000);
+            Console.Clear();
+            MenuFeudo();
+        }
+    
+        string insercao = @$"INSERT INTO Membros(Nome,Familia) VALUES(@nome,@familia)";
+        SqlCommand comando = new SqlCommand(insercao, conexaoBD);
+        comando.Parameters.Add(new SqlParameter("@nome", membro.Nome));
+        comando.Parameters.Add(new SqlParameter("@familia", membro.Familia));
+
+        var linhasSalvas = comando.ExecuteNonQuery();
+
+        Retorno(linhasSalvas, "criada");
+    }
+}
 
 
 static void RetornarFeudos()
@@ -643,7 +823,7 @@ static void RetornarFamilias()
 
         foreach (DataRow row in dataTable.Rows)
         {
-            Console.WriteLine($"Feudo: {row["NomeDaFamilia"]} //// Identificador (ID): {row ["ID"]}");
+            Console.WriteLine($"Nome da Família: {row["NomeDaFamilia"]} //// Identificador (ID): {row ["ID"]}");
         }
 
 
@@ -651,7 +831,29 @@ static void RetornarFamilias()
     }
 }
 
+static void RetornarMembros()
+{
+    using (var conexaoBD = new SqlConnection(connectionString))
+    {
+        
+        //cria-se o comando sql
+        string pesquisar = @"SELECT * FROM Membros";
+        SqlCommand comando = new SqlCommand(pesquisar, conexaoBD);
+        
+        //puxa o conjunto de dados do banco de dados para um DataSet. O método .Fill preenche o dataset com os dados retornado pelo comando sql
+        SqlDataAdapter adapter = new SqlDataAdapter(comando);
+        DataSet dataSet = new DataSet();
+        adapter.Fill(dataSet);
+        
+        foreach (DataRow row in dataSet.Tables[0].Rows)
+        {
+        Console.WriteLine($"Nome do membro: {row["Nome"]} //// Identificador (ID): {row ["ID"]}");
+        
+        }
 
+    
+    }
+}
 
 static void Retorno(int linhasAfetadas, string foiFeitoOque)
 {
