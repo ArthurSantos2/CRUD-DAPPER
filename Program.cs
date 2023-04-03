@@ -45,6 +45,7 @@ static void Menu()
     Console.WriteLine("Para cadastrar ou modificar um produto, digite: PRODUTO");
     Console.WriteLine("Para cadastrar ou modificar um feudo, digite: FEUDO");
     Console.WriteLine("Se você quer extinguir uma família por inteiro, digite: BANIR");
+    Console.WriteLine("Para cadastrar ou modificar uma família, digite: FAMILIA");
 
     
 
@@ -75,6 +76,10 @@ static void Menu()
         case "BANIR":
         Console.Clear();
         MenuExtinguir();
+        break;
+        case "FAMILIA":
+        Console.Clear();
+        MenuFamilia();
         break;
         case "SAIR":
         Console.WriteLine("Saindo...");
@@ -196,7 +201,7 @@ static void MenuProduto()
     }
 }
 
-//esse CRUD deve banir uma familia por completo, apagando familia, membros e áreas que pertenciam
+
 static void MenuExtinguir()
 {
     Console.WriteLine("Bom dia, Senhor Feudal. Você estar aqui significa que algo muito grave irá ocorrer");
@@ -244,6 +249,57 @@ static void MenuExtinguir()
     }
 }
 
+static void MenuFamilia()
+{
+    Console.WriteLine("Bom dia, Senhor Feudal. O que gostaria de fazer com as informações das famílias?");
+    Console.WriteLine("Para cadastrar uma nova familia, digite: CADASTRAR");
+    Console.WriteLine("Para alterar o nome de uma família, digite: MODIFICAR");
+    
+    Console.WriteLine("Se você não quer continuar aqui, digite: SAIR");
+    var option = Console.ReadLine();
+
+    if(option == null)
+    {
+        Console.WriteLine("Por gentileza, não envie a resposta vazia");
+        Console.WriteLine("Redirecionando para o menu de opcões atual...");
+        Thread.Sleep(3000);
+        Console.Clear();
+        MenuFeudo();
+    }
+    
+    option = option.ToUpper();
+    int id;
+    switch (option)
+    {
+        case "CADASTRAR":
+        Console.Clear();
+        CriarFamilia(); 
+        break;
+        case "MODIFICAR":
+        Console.Clear();
+        Console.WriteLine("Escolha a família e digite o ID que identifica ela");
+        RetornarFamilias();
+        Console.WriteLine("Pode digitar:");
+        id = int.Parse(Console.ReadLine());
+        var familiaModificada = ModificarFamiliaModelo();
+        ModificarFamilia(id,familiaModificada);
+        break;
+        case "SAIR":
+        Console.WriteLine("Saindo...");
+        Thread.Sleep(3000);
+        Console.Clear();
+        Environment.Exit(0);
+        break;
+        default: 
+        Console.WriteLine("Por gentileza, inserir uma opção válida");
+        Console.WriteLine("Redirecionando para o menu de opcões atual...");
+        Thread.Sleep(3000);
+        Console.Clear();
+        MenuFamilia();
+        break;
+        
+    }
+}
 
 static void CriarProduto()
 {
@@ -269,6 +325,18 @@ static void CriarFeudo()
     
 }
 
+
+static void CriarFamilia()
+{
+    var familia = new Familia();
+
+    Console.WriteLine("Área de inserção de Famílias");
+    Console.WriteLine("Digite o nome da família abaixo:");
+    familia.NomeDaFamilia = Console.ReadLine();
+
+    SalvarFamilia(familia);
+    
+}
 
 
 static void ModificarProduto(int id, Produto produto)
@@ -339,7 +407,7 @@ static void ModificarFeudo(int id, MeuFeudo nome)
             MenuFeudo();
         }
         
-        string modificar = @"UPDATE MeusFeudos SET Nome = @nome WHERE ID = @id";
+        string modificar = @$"UPDATE MeusFeudos SET Nome = {nome} WHERE ID = {id}";
         SqlCommand comandoModificar = new SqlCommand(modificar, conexaoBD);
         comandoModificar.Parameters.AddWithValue("@Nome", nome.Nome);
         comandoModificar.Parameters.AddWithValue("@ID", id);
@@ -350,6 +418,46 @@ static void ModificarFeudo(int id, MeuFeudo nome)
     }
 }
 
+static void ModificarFamilia(int id, Familia nomeFamilia)
+{
+    //codigo refatorado com a exclusão do uso do DataSet, simplificação na consulta da existência de um dado.
+    using (var conexaoBD = new SqlConnection(connectionString))
+    {
+        conexaoBD.Open();
+        
+        string pesquisar = @$"SELECT COUNT(*) FROM Familias WHERE ID = @id";
+        SqlCommand comandoPesquisa = new SqlCommand(pesquisar, conexaoBD);
+        comandoPesquisa.Parameters.AddWithValue("@id", id);
+        
+        int qtdRegistros = (int)comandoPesquisa.ExecuteScalar();
+        if (qtdRegistros == 0)
+        {
+            Console.WriteLine("O ID passado não existe na tabela. Você faltou as aulas com os monges");
+            Console.WriteLine("Redirecionando para o menu atual...");
+            Thread.Sleep(3000);
+            Console.Clear();
+            MenuFeudo();
+        }
+        
+        string modificar = @"UPDATE Familias SET NomeDaFamilia = @nomeFamilia WHERE ID = @id";
+        SqlCommand comandoModificar = new SqlCommand(modificar, conexaoBD);
+        comandoModificar.Parameters.AddWithValue("@nomeFamilia", nomeFamilia.NomeDaFamilia);
+        comandoModificar.Parameters.AddWithValue("@id", id);
+
+        int linhasModificadas = comandoModificar.ExecuteNonQuery();
+
+        Retorno(linhasModificadas, "Modificadas");
+    }
+}
+
+static Familia ModificarFamiliaModelo()
+{
+    var familia = new Familia();
+    Console.WriteLine("Olá, Senhor Feudal. Iremos modificar uma família agora");
+    Console.WriteLine("Por gentileza, escreva novo nome");
+    familia.NomeDaFamilia = Console.ReadLine();
+    return familia;
+}
 
 
 static Produto ModificarProdutoModelo()
@@ -371,21 +479,21 @@ static MeuFeudo ModificarFeudoModelo()
 }
 
 
+//código pensando no ínicio
+// static void Deletar(int id)
+// {
+//     //codigo exemplo, produto nao poder ser excluido por ter relações
+//     using (var conexaoBD = new SqlConnection(connectionString))
+//     {
+//     conexaoBD.Open();
+//     string excluir = @"DELETE FROM Produtos WHERE ID = @id";
+//     SqlCommand comando = new SqlCommand(excluir, conexaoBD);
 
-static void Deletar(int id)
-{
-    //codigo exemplo, produto nao poder ser excluido por ter relações
-    using (var conexaoBD = new SqlConnection(connectionString))
-    {
-    conexaoBD.Open();
-    string excluir = @"DELETE FROM Produtos WHERE ID = @id";
-    SqlCommand comando = new SqlCommand(excluir, conexaoBD);
+//     int linhaExcluida = comando.ExecuteNonQuery();
+//     }
+// }
 
-    int linhaExcluida = comando.ExecuteNonQuery();
-    }
-}
-
-//está ocorrendo o erro da variavel id não ter sido declarada. Ocorreu o mesmo com o modificarFeudo, porém resolveu só em reescrever?
+//erro resolvido com interpolação
 static void ExtinguirFamilia(int id)
 {
     using (var conexaoBD = new SqlConnection(connectionString))
@@ -418,6 +526,8 @@ static void ExtinguirFamilia(int id)
     }
 }
 
+
+
 static void SalvarProduto(Produto produto)
 {
 
@@ -436,7 +546,6 @@ static void SalvarProduto(Produto produto)
 
 static void SalvarFeudo(MeuFeudo nome)
 {
-
     using (var conexaoBD = new SqlConnection(connectionString))
     {
         conexaoBD.Open();
@@ -449,6 +558,23 @@ static void SalvarFeudo(MeuFeudo nome)
         Retorno(linhasSalvas, "criado");
     }
 }
+
+static void SalvarFamilia(Familia nome)
+{
+    using (var conexaoBD = new SqlConnection(connectionString))
+    {
+        conexaoBD.Open();
+        string insercao = @$"INSERT INTO Familias(NomeDaFamilia) VALUES(@nome)";
+        SqlCommand comando = new SqlCommand(insercao, conexaoBD);
+        comando.Parameters.Add(new SqlParameter("@nome", nome.NomeDaFamilia));
+
+        var linhasSalvas = comando.ExecuteNonQuery();
+
+        Retorno(linhasSalvas, "criada");
+    }
+}
+
+
 
 static void RetornarFeudos()
 {
