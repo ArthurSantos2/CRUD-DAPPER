@@ -12,9 +12,9 @@ const string connectionString = "Server=DESKTOP-7V86B4M;Database=MeuFeudo;Integr
 //estações não se alteram. alterar membros/produtos/feudos
 //os métodos de exlusão só podem ser feito em: membros 
 
+//falta fazer de arrecadação, area e poder da familia
 
-
-//maneira de raciocinio diferente para criar com ADO.NET
+//maneira de fazer diferente para criar com ADO.NET
 // using (var conexaoBD = new SqlConnection(connectionString))
 // {
 //     conexaoBD.Open();
@@ -47,7 +47,7 @@ static void Menu()
     Console.WriteLine("Se você quer extinguir uma família por inteiro, digite: BANIR");
     Console.WriteLine("Para cadastrar ou modificar uma família, digite: FAMILIA");
     Console.WriteLine("Para cadastrar, deletar ou modificar um membro, digite: MEMBRO");
-
+    Console.WriteLine("Para cadastrar ou modificar um nível de poder de família, digite: PODER");
     
 
     Console.WriteLine("Se você está não quer continuar aqui, digite: SAIR");
@@ -85,6 +85,10 @@ static void Menu()
         case "MEMBRO":
         Console.Clear();
         MenuMembro();
+        break;
+        case "PODER":
+        Console.Clear();
+        MenuPoderFamilia();
         break;
         case "SAIR":
         Console.WriteLine("Saindo...");
@@ -363,6 +367,60 @@ static void MenuFamilia()
     }
 }
 
+static void MenuPoderFamilia()
+{
+    Console.WriteLine("Bom dia, Senhor Feudal. O que gostaria de fazer com as informações dos níveis de poder das famílias?");
+    Console.WriteLine("Para cadastrar um novo nível, digite: CADASTRAR");
+    Console.WriteLine("Para alterar a nomenclatura de um nível, digite: MODIFICAR");
+    
+    Console.WriteLine("Se você não quer continuar aqui, digite: SAIR");
+    var option = Console.ReadLine();
+
+    if(option == null)
+    {
+        Console.WriteLine("Por gentileza, não envie a resposta vazia");
+        Console.WriteLine("Redirecionando para o menu de opcões atual...");
+        Thread.Sleep(3000);
+        Console.Clear();
+        MenuFeudo();
+    }
+    
+    option = option.ToUpper();
+    int id;
+    switch (option)
+    {
+        case "CADASTRAR":
+        Console.Clear();
+        CriarPoderFamiliar(); 
+        break;
+        case "MODIFICAR":
+        Console.Clear();
+        Console.WriteLine("Escolha o nível a ser alterado e digite o ID que identifica ela");
+        RetornarPoderFamilia();
+        Console.WriteLine("Pode digitar:");
+        id = int.Parse(Console.ReadLine());
+        var poderModificado = ModificarPoderFamiliaModelo();
+        ModificarPoderFamilia(id,poderModificado);
+        break;
+        case "SAIR":
+        Console.WriteLine("Saindo...");
+        Thread.Sleep(3000);
+        Console.Clear();
+        Environment.Exit(0);
+        break;
+        default: 
+        Console.WriteLine("Por gentileza, inserir uma opção válida");
+        Console.WriteLine("Redirecionando para o menu de opcões atual...");
+        Thread.Sleep(3000);
+        Console.Clear();
+        MenuFamilia();
+        break;
+        
+    }
+}
+
+
+
 static void CriarProduto()
 {
     var produto = new Produto();
@@ -372,6 +430,18 @@ static void CriarProduto()
     produto.NomeDoProduto = Console.ReadLine();
 
     SalvarProduto(produto);
+  
+}
+
+static void CriarPoderFamiliar()
+{
+    var poder = new PoderDaFamilia();
+
+    Console.WriteLine("Área de criação de nível de poder");
+    Console.WriteLine("Digite a nomenclatura do novo nível");
+    poder.NivelDePoder = Console.ReadLine();
+
+    SalvarPoder(poder);
   
 }
 
@@ -574,6 +644,38 @@ static void ModificarMembro(int id, Membro membro)
     }
 }
 
+static void ModificarPoderFamilia(int id, PoderDaFamilia nivel)
+{
+    //codigo refatorado com a exclusão do uso do DataSet, simplificação na consulta da existência de um dado.
+    using (var conexaoBD = new SqlConnection(connectionString))
+    {
+        conexaoBD.Open();
+        
+        string pesquisar = @$"SELECT COUNT(*) FROM PoderDaFamilia WHERE ID = @id";
+        SqlCommand comandoPesquisa = new SqlCommand(pesquisar, conexaoBD);
+        comandoPesquisa.Parameters.AddWithValue("@id", id);
+        
+        int qtdRegistros = (int)comandoPesquisa.ExecuteScalar();
+        if (qtdRegistros == 0)
+        {
+            Console.WriteLine("O ID passado não existe na tabela. Você faltou as aulas com os monges");
+            Console.WriteLine("Redirecionando para o menu atual...");
+            Thread.Sleep(3000);
+            Console.Clear();
+            MenuFeudo();
+        }
+        
+        string modificar = @"UPDATE PoderDaFamilia SET NivelDePoder = @nivel WHERE ID = @id";
+        SqlCommand comandoModificar = new SqlCommand(modificar, conexaoBD);
+        comandoModificar.Parameters.AddWithValue("@nivel", nivel.NivelDePoder);
+        comandoModificar.Parameters.AddWithValue("@id", id);
+
+        int linhasModificadas = comandoModificar.ExecuteNonQuery();
+
+        Retorno(linhasModificadas, "Modificadas");
+    }
+}
+
 static Familia ModificarFamiliaModelo()
 {
     var familia = new Familia();
@@ -596,6 +698,14 @@ static Membro ModificarMembroModelo()
     return membro;
 }
 
+static PoderDaFamilia ModificarPoderFamiliaModelo()
+{
+    var poder = new PoderDaFamilia();
+    Console.WriteLine("Olá, Senhor Feudal. Iremos modificar um dos níveis de poder");
+    Console.WriteLine("Por gentileza, escreva o novo nome");
+    poder.NivelDePoder = Console.ReadLine();
+    return poder;
+}
 
 static Produto ModificarProdutoModelo()
 {
@@ -693,6 +803,23 @@ static void SalvarProduto(Produto produto)
     }
 }
 
+static void SalvarPoder(PoderDaFamilia poder)
+{
+
+    using (var conexaoBD = new SqlConnection(connectionString))
+    {
+        conexaoBD.Open();
+        //sempre que não interpola $ quebra ?????????
+        string insercao = @$"INSERT INTO PoderDaFamilia(NivelDePoder) VALUES(@poder)";
+        SqlCommand comando = new SqlCommand(insercao, conexaoBD);
+        comando.Parameters.Add(new SqlParameter("@poder", poder.NivelDePoder));
+
+        var linhasSalvas = comando.ExecuteNonQuery();
+
+        Retorno(linhasSalvas, "criado");
+    }
+}
+
 static void SalvarFeudo(MeuFeudo nome)
 {
     using (var conexaoBD = new SqlConnection(connectionString))
@@ -760,7 +887,7 @@ static void RetornarFeudos()
 {
     using (var conexaoBD = new SqlConnection(connectionString))
     {
-        
+        conexaoBD.Open();
         //cria-se o comando sql
         string pesquisar = @"SELECT * FROM MeusFeudos";
         SqlCommand comando = new SqlCommand(pesquisar, conexaoBD);
@@ -785,7 +912,7 @@ static void RetornarProdutos()
 {
     using (var conexaoBD = new SqlConnection(connectionString))
     {
-        
+        conexaoBD.Open();
         //cria-se o comando sql
         string pesquisar = @"SELECT * FROM Produtos";
         SqlCommand comando = new SqlCommand(pesquisar, conexaoBD);
@@ -806,14 +933,14 @@ static void RetornarProdutos()
     }
 }
 
-//forma refatorada 
+//forma refatorada do dataset para o datatable 
 static void RetornarFamilias()
 {
     using (var conexaoBD = new SqlConnection(connectionString))
     {
-        
+        conexaoBD.Open();
         //cria-se o comando sql
-        string consulta = "SELECT NomeDaFamilia, ID FROM Familias";
+        string consulta = @"SELECT NomeDaFamilia, ID FROM Familias";
         SqlCommand comando = new SqlCommand(consulta, conexaoBD);
 
         //puxa o conjunto de dados do banco de dados para um DataTable. O método .Fill preenche o datatable com os dados retornado pelo comando sql, o que torna mais eficiente por se tratar apenas de uma tabela
@@ -828,6 +955,26 @@ static void RetornarFamilias()
 
 
     
+    }
+}
+
+static void RetornarPoderFamilia()
+{
+    using (var conexaoBD = new SqlConnection(connectionString))
+    {
+        conexaoBD.Open();
+        //cria-se o comando sql
+        string consulta = @"SELECT NivelDePoder,ID FROM PoderDaFamilia";
+        SqlCommand comando = new SqlCommand(consulta, conexaoBD);
+
+        SqlDataAdapter adapter = new SqlDataAdapter(comando);
+        DataTable dataTable = new DataTable();
+        adapter.Fill(dataTable);
+
+        foreach (DataRow row in dataTable.Rows)
+        {
+            Console.WriteLine($"Nivel da Família: {row["NivelDePoder"]} //// Identificador (ID): {row ["ID"]}");
+        }
     }
 }
 
