@@ -10,9 +10,10 @@ const string connectionString = "Server=DESKTOP-7V86B4M;Database=MeuFeudo;Integr
 //alterar dados de areas (deve listar as opcoes de Poder da familia na area e familias e feudos)/
 //alterar arrecadacoes(deve listar produtos, estações e areas)
 //estações não se alteram. alterar membros/produtos/feudos
-//os métodos de exlusão só podem ser feito em: membros 
+//os métodos de exlusão puramente só podem ser feito em: membros
 
-//falta fazer de arrecadação, area e poder da familia
+//falta fazer de arrecadação, area
+//não é possível excluir uma área sem excluir sua arrecadação
 
 //maneira de fazer diferente para criar com ADO.NET
 // using (var conexaoBD = new SqlConnection(connectionString))
@@ -48,7 +49,8 @@ static void Menu()
     Console.WriteLine("Para cadastrar ou modificar uma família, digite: FAMILIA");
     Console.WriteLine("Para cadastrar, deletar ou modificar um membro, digite: MEMBRO");
     Console.WriteLine("Para cadastrar ou modificar um nível de poder de família, digite: PODER");
-    
+    Console.WriteLine("Para cadastrar, deletar ou modificar uma arrecadação, digite: ARRECADACAO");
+    Console.WriteLine("Para cadastrar ou modificar uma area, digite: AREA");
 
     Console.WriteLine("Se você está não quer continuar aqui, digite: SAIR");
     var option = Console.ReadLine();
@@ -89,6 +91,14 @@ static void Menu()
         case "PODER":
         Console.Clear();
         MenuPoderFamilia();
+        break;
+        case "ARRECADACAO":
+        Console.Clear();
+        MenuArrecadacao();
+        break;
+        case "AREA":
+        Console.Clear();
+        MenuArea();
         break;
         case "SAIR":
         Console.WriteLine("Saindo...");
@@ -419,6 +429,121 @@ static void MenuPoderFamilia()
     }
 }
 
+static void MenuArrecadacao()
+{
+    Console.WriteLine("Bom dia, Senhor Feudal. O que gostaria de fazer com as arrecadações?");
+    Console.WriteLine("Espero que tenha aprendido com os monges a ler, veja as opções abaixo:");
+    Console.WriteLine("Para cadastrar, digite: CADASTRAR");
+    Console.WriteLine("Para alterar um membro, digite: MODIFICAR");
+    Console.WriteLine("Para excluir um, digite: EXCLUIR");
+    
+    Console.WriteLine("Se você não quer continuar aqui, digite: SAIR");
+    var option = Console.ReadLine();
+
+    if(option == null)
+    {
+        Console.WriteLine("Por gentileza, não envie a resposta vazia");
+        Console.WriteLine("Redirecionando para o menu de opcões...");
+        Thread.Sleep(3000);
+        Console.Clear();
+        MenuProduto();
+    }
+    
+    option = option.ToUpper();
+    int id;
+    switch (option)
+    {
+        case "CADASTRAR":
+        CriarArrecadacao();
+        break;
+        case "MODIFICAR":
+        Console.WriteLine("Escolha a arrecadação e digite o ID que identifica ela");
+        RetornarArrecadacao();
+        Console.WriteLine("Pode digitar:");
+        id = int.Parse(Console.ReadLine());
+        var arrecadacaoModificada = ModificarArrecadacaoModelo();
+        ModificarArrecadacao(id,arrecadacaoModificada);
+        break;
+        case "EXCLUIR":
+        Console.WriteLine("Escolha a arrecadacao a ser deletada e digite o ID que identifica ela");
+        RetornarArrecadacao();
+        Console.WriteLine("Pode digitar:");
+        id = int.Parse(Console.ReadLine());
+        DeletarArrecadacao(id);
+        break;
+        case "SAIR":
+        Console.WriteLine("Saindo...");
+        Thread.Sleep(3000);
+        Console.Clear();
+        Environment.Exit(0);
+        break;
+        default: 
+        Console.WriteLine("Por gentileza, inserir uma opção válida");
+        Console.WriteLine("Redirecionando para o menu de opcões...");
+        Thread.Sleep(3000);
+        MenuProduto();
+        break;
+        
+    }
+}
+
+static void MenuArea()
+{
+    Console.WriteLine("Bom dia, Senhor Feudal. O que gostaria de fazer com as áreas?");
+    Console.WriteLine("Espero que tenha aprendido com os monges a ler, veja as opções abaixo:");
+    Console.WriteLine("Para cadastrar, digite: CADASTRAR");
+    Console.WriteLine("Para alterar um membro, digite: MODIFICAR");
+    Console.WriteLine("Para excluir um, digite: EXCLUIR");
+    
+    Console.WriteLine("Se você não quer continuar aqui, digite: SAIR");
+    var option = Console.ReadLine();
+
+    if(option == null)
+    {
+        Console.WriteLine("Por gentileza, não envie a resposta vazia");
+        Console.WriteLine("Redirecionando para o menu de opcões...");
+        Thread.Sleep(3000);
+        Console.Clear();
+        MenuProduto();
+    }
+    
+    option = option.ToUpper();
+    int id;
+    switch (option)
+    {
+        case "CADASTRAR":
+        CriarArea();
+        break;
+        case "MODIFICAR":
+        Console.WriteLine("Escolha a área e digite o ID que identifica ela");
+        RetornarAreas();
+        Console.WriteLine("Pode digitar:");
+        id = int.Parse(Console.ReadLine());
+        var areaModificada = ModificarAreaModelo();
+        ModificarArea(id,areaModificada);
+        break;
+        // case "EXCLUIR":
+        // Console.WriteLine("Escolha a arrecadacao a ser deletada e digite o ID que identifica ela");
+        // RetornarAreas();
+        // Console.WriteLine("Pode digitar:");
+        // id = int.Parse(Console.ReadLine());
+        // DeletarArea(id);
+        // break;
+        case "SAIR":
+        Console.WriteLine("Saindo...");
+        Thread.Sleep(3000);
+        Console.Clear();
+        Environment.Exit(0);
+        break;
+        default: 
+        Console.WriteLine("Por gentileza, inserir uma opção válida");
+        Console.WriteLine("Redirecionando para o menu de opcões...");
+        Thread.Sleep(3000);
+        MenuProduto();
+        break;
+        
+    }
+}
 
 
 static void CriarProduto()
@@ -484,6 +609,55 @@ static void CriarFamilia()
     
 }
 
+static void CriarArrecadacao()
+{
+    var arrecadado = new Arrecadacao();
+    Console.WriteLine("Olá, Senhor Feudal. Iremos criar uma nova arrecadação agora");
+    Console.WriteLine("Por gentileza, escolher uma das estações do ano e digitar seu id:");
+    RetornarEstacoes();
+    Console.WriteLine("PODE DIGITAR:");
+    arrecadado.EstacaoDoAno = int.Parse(Console.ReadLine());
+    Console.Clear();
+    Console.WriteLine("Por gentileza, veja as áreas e digite o id da área escolhida");
+    RetornarAreasSeletivo();
+    Console.WriteLine("PODE DIGITAR:");
+    arrecadado.AreaDeArrecadacao = int.Parse(Console.ReadLine());
+    Console.Clear();
+    Console.WriteLine("Por gentileza, veja os produtos e digite o id do produto escolhido");
+    RetornarProdutos();
+    arrecadado.Arrecadado = int.Parse(Console.ReadLine());
+    Console.Clear();
+    Console.WriteLine("Digite a quantidade a ser inserida:");
+    arrecadado.Quantidade = int.Parse(Console.ReadLine());
+    Console.Clear();
+    
+    SalvarArrecadacao(arrecadado);
+}
+
+static void CriarArea()
+{
+    var area = new Area();
+    Console.WriteLine("Olá, Senhor Feudal. Iremos criar uma nova Área agora");
+    Console.WriteLine("Por gentileza, escolher uma das famílias para a área e digitar seu id:");
+    RetornarFamilias();
+    Console.WriteLine("PODE DIGITAR:");
+    area.FamiliaDaArea = int.Parse(Console.ReadLine());
+    Console.Clear();
+    Console.WriteLine("Por gentileza, veja os níveis de poder de uma família e digite o id do escolhido");
+    RetornarPoderFamilia();
+    Console.WriteLine("PODE DIGITAR:");
+    area.NivelDaFamilia = int.Parse(Console.ReadLine());
+    Console.Clear();
+    Console.WriteLine("Por gentileza, digite o nome da área");
+    area.NomeDaArea = Console.ReadLine();
+    Console.Clear();
+    Console.WriteLine("Digite a que feudo irá pertencer");
+    RetornarFeudos();
+    area.FeudoPertencente = int.Parse(Console.ReadLine());
+    Console.Clear();
+    
+    SalvarArea(area);
+}
 
 static void ModificarProduto(int id, Produto produto)
 {
@@ -676,6 +850,106 @@ static void ModificarPoderFamilia(int id, PoderDaFamilia nivel)
     }
 }
 
+static void ModificarArrecadacao(int id, Arrecadacao arrecadacao)
+{
+    //seria interessante ter uma validação nos dados que tem relacionamento para não quebrar, porém desnecessário no momento
+    using (var conexaoBD = new SqlConnection(connectionString))
+    {
+        conexaoBD.Open();
+        
+        string pesquisar = @$"SELECT COUNT(*) FROM Arrecadacoes WHERE ID = @id";
+        SqlCommand comandoPesquisa = new SqlCommand(pesquisar, conexaoBD);
+        comandoPesquisa.Parameters.AddWithValue("@id", id);
+        
+        int qtdRegistros = (int)comandoPesquisa.ExecuteScalar();
+        if (qtdRegistros == 0)
+        {
+            Console.WriteLine("O ID passado não existe na tabela. Você faltou as aulas com os monges");
+            Console.WriteLine("Redirecionando para o menu atual...");
+            Thread.Sleep(3000);
+            Console.Clear();
+            MenuFeudo();
+        }
+        //não colocarei estação do ano
+        string modificar = @"UPDATE Arrecadacoes SET AreaDeArrecadacao = @areadearrecadacao, Arrecadado = @arrecadado, Quantidade = @quantidade WHERE ID = @id";
+        SqlCommand comandoModificar = new SqlCommand(modificar, conexaoBD);
+        comandoModificar.Parameters.AddWithValue("@areadearrecadacao", arrecadacao.AreaDeArrecadacao);
+        comandoModificar.Parameters.AddWithValue("@arrecadado", arrecadacao.Arrecadado);
+        comandoModificar.Parameters.AddWithValue("@quantidade", arrecadacao.Quantidade);
+        comandoModificar.Parameters.AddWithValue("@id", id);
+
+        int linhasModificadas = comandoModificar.ExecuteNonQuery();
+
+        Retorno(linhasModificadas, "Modificadas");
+    }
+}
+
+static void ModificarArea(int id, Area area)
+{
+    //seria interessante ter uma validação nos dados que tem relacionamento para não quebrar, porém desnecessário no momento
+    using (var conexaoBD = new SqlConnection(connectionString))
+    {
+        conexaoBD.Open();
+        
+        string pesquisar = @$"SELECT COUNT(*) FROM Areas WHERE ID = @id";
+        SqlCommand comandoPesquisa = new SqlCommand(pesquisar, conexaoBD);
+        comandoPesquisa.Parameters.AddWithValue("@id", id);
+
+         string pesquisarFamilia = @"SELECT COUNT(*) FROM Familias WHERE ID = @familia";
+        SqlCommand comandoPesquisaFamilia = new SqlCommand(pesquisarFamilia, conexaoBD);
+        comandoPesquisaFamilia.Parameters.AddWithValue("@familia", area.FamiliaDaArea);
+        
+        string pesquisarPoder = @"SELECT COUNT(*) FROM PoderDaFamilia WHERE ID = @poder";
+        SqlCommand comandoPesquisaPoder = new SqlCommand(pesquisarPoder, conexaoBD);
+        comandoPesquisaPoder.Parameters.AddWithValue("@poder", area.NivelDaFamilia);
+
+        string pesquisarFeudo = @"SELECT COUNT(*) FROM MeusFeudos WHERE ID = @feudo";
+        SqlCommand comandoPesquisaFeudo = new SqlCommand(pesquisarFeudo, conexaoBD);
+        comandoPesquisaFeudo.Parameters.AddWithValue("@Feudo", area.FeudoPertencente);
+
+        int qtdRegistrosFamilia = (int)comandoPesquisaFamilia.ExecuteScalar();
+        int qtdRegistrosPoder = (int)comandoPesquisaPoder.ExecuteScalar();
+        int qtdRegistrosFeudo = (int)comandoPesquisaFeudo.ExecuteScalar();
+        int qtdRegistros = (int)comandoPesquisa.ExecuteScalar();
+
+        if (qtdRegistros == 0 || qtdRegistrosFamilia == 0 || qtdRegistrosPoder == 0 || qtdRegistrosFeudo == 0)
+        {
+            Console.WriteLine("O ID passado não inexiste. Você faltou as aulas com os monges");
+            Console.WriteLine("Redirecionando para o menu atual...");
+            Thread.Sleep(3000);
+            Console.Clear();
+            MenuFeudo();
+        }
+        
+        string modificar = @$"UPDATE Areas SET FamiliaDaArea = @familiaDaArea, NivelDaFamilia = @nivelDaFamilia, NomeDaArea = @nomeDaArea, FeudoPertencente = @feudoPertencente WHERE ID = @id";
+        SqlCommand comandoModificar = new SqlCommand(modificar, conexaoBD);
+        comandoModificar.Parameters.AddWithValue("@familiaDaArea", area.FamiliaDaArea);
+        comandoModificar.Parameters.AddWithValue("@nivelDaFamilia", area.NivelDaFamilia);
+        comandoModificar.Parameters.AddWithValue("@nomeDaArea", area.NomeDaArea);
+        comandoModificar.Parameters.AddWithValue("@feudoPertencente", area.FeudoPertencente);
+        comandoModificar.Parameters.AddWithValue("@id", id);
+
+        int linhasModificadas = comandoModificar.ExecuteNonQuery();
+
+        Retorno(linhasModificadas, "Modificadas");
+    }
+}
+
+static Arrecadacao ModificarArrecadacaoModelo()
+{
+    var arrecadado = new Arrecadacao();
+    Console.WriteLine("Olá, Senhor Feudal. Iremos modificar uma arrecadação agora");
+    Console.WriteLine("Por gentileza, veja as áreas e digite o id da área escolhida");
+    RetornarAreasSeletivo();
+    arrecadado.AreaDeArrecadacao = int.Parse(Console.ReadLine());
+    Console.WriteLine("Por gentileza, veja os produtos e digite o id do produto escolhido");
+    RetornarProdutos();
+    arrecadado.Arrecadado = int.Parse(Console.ReadLine());
+    Console.WriteLine("Digite a quantidade atualizada:");
+    arrecadado.Quantidade = int.Parse(Console.ReadLine());
+    return arrecadado;
+}
+
 static Familia ModificarFamiliaModelo()
 {
     var familia = new Familia();
@@ -725,20 +999,23 @@ static MeuFeudo ModificarFeudoModelo()
     return feudo;
 }
 
-
-//código pensando no ínicio
-// static void Deletar(int id)
-// {
-//     //codigo exemplo, produto nao poder ser excluido por ter relações
-//     using (var conexaoBD = new SqlConnection(connectionString))
-//     {
-//     conexaoBD.Open();
-//     string excluir = @"DELETE FROM Produtos WHERE ID = @id";
-//     SqlCommand comando = new SqlCommand(excluir, conexaoBD);
-
-//     int linhaExcluida = comando.ExecuteNonQuery();
-//     }
-// }
+static Area ModificarAreaModelo()
+{
+    var area = new Area();
+    Console.WriteLine("Olá, Senhor Feudal. Iremos modificar uma area agora");
+    Console.WriteLine("Por gentileza, veja as familias e digite o id da escolhida");
+    RetornarFamilias();
+    area.FamiliaDaArea = int.Parse(Console.ReadLine());
+    Console.WriteLine("Por gentileza, veja os niveis de familia em uma área e digite o id da escolhida");
+    RetornarPoderFamilia();
+    area.NivelDaFamilia = int.Parse(Console.ReadLine());
+    Console.WriteLine("Digite novo nome da área atualizada:");
+    area.NomeDaArea = Console.ReadLine();
+    Console.WriteLine("Digite para qual feudo vai pertencer atualizada:");
+    RetornarFeudos();
+    area.FeudoPertencente = int.Parse(Console.ReadLine());
+    return area;
+}
 
 static void DeletarMembro(int id)
 {
@@ -750,8 +1027,31 @@ static void DeletarMembro(int id)
     SqlCommand comando = new SqlCommand(excluir, conexaoBD);
 
     int linhaExcluida = comando.ExecuteNonQuery();
+
+    Retorno(linhaExcluida, "deletada");
     }
 }
+
+static void DeletarArrecadacao(int id)
+{
+    
+    using (var conexaoBD = new SqlConnection(connectionString))
+    {
+    conexaoBD.Open();
+    string excluir = @$"DELETE FROM Arrecadacoes WHERE ID = {id}";
+    SqlCommand comando = new SqlCommand(excluir, conexaoBD);
+
+    int linhaExcluida = comando.ExecuteNonQuery();
+
+    Retorno(linhaExcluida, "deletada");
+    }
+}
+
+//colocar o deletar área depois, necessita que ao deletar leve antes as arrecadações dela. Já tem o exemplo no projeto
+// static void DeletarArea()
+// {
+
+// }
 
 //erro resolvido com interpolação
 static void ExtinguirFamilia(int id)
@@ -882,6 +1182,97 @@ static void SalvarMembro(Membro membro)
     }
 }
 
+static void SalvarArrecadacao(Arrecadacao arrecadacao)
+{
+    using (var conexaoBD = new SqlConnection(connectionString))
+    {
+        
+        conexaoBD.Open();
+        
+        string pesquisarEstacao = @"SELECT COUNT(*) FROM Estacoes WHERE ID = @estacao";
+        SqlCommand comandoPesquisaEstacao = new SqlCommand(pesquisarEstacao, conexaoBD);
+        comandoPesquisaEstacao.Parameters.AddWithValue("@estacao", arrecadacao.EstacaoDoAno);
+        
+        string pesquisarAreaDeArrecadacao = @"SELECT COUNT(*) FROM Areas WHERE ID = @AreaDeArrecadacao";
+        SqlCommand comandoPesquisaAreaDeArrecadacao = new SqlCommand(pesquisarAreaDeArrecadacao, conexaoBD);
+        comandoPesquisaAreaDeArrecadacao.Parameters.AddWithValue("@AreaDeArrecadacao", arrecadacao.AreaDeArrecadacao);
+
+        string pesquisarArrecadado = @"SELECT COUNT(*) FROM Produtos WHERE ID = @Arrecadado";
+        SqlCommand comandoPesquisaArrecadado = new SqlCommand(pesquisarArrecadado, conexaoBD);
+        comandoPesquisaArrecadado.Parameters.AddWithValue("@Arrecadado", arrecadacao.Arrecadado);
+
+
+        int qtdRegistrosEstacao = (int)comandoPesquisaEstacao.ExecuteScalar();
+        int qtdRegistrosAreaDeArrecadacao = (int)comandoPesquisaAreaDeArrecadacao.ExecuteScalar();
+        int qtdRegistrosArrecadado = (int)comandoPesquisaArrecadado.ExecuteScalar();
+
+        if (qtdRegistrosEstacao == 0 || qtdRegistrosAreaDeArrecadacao == 0 || qtdRegistrosArrecadado == 0)
+        {
+            Console.WriteLine("O ID passado não existe na tabela. Você faltou as aulas com os monges");
+            Console.WriteLine("Redirecionando para o menu atual...");
+            Thread.Sleep(3000);
+            Console.Clear();
+            MenuFeudo();
+        }
+    
+        string insercao = @$"INSERT INTO Arrecadacoes(EstacaoDoAno, AreaDeArrecadacao, Arrecadado, Quantidade) VALUES(@estacao,@areadearrecadacao,@arrecadado,@quantidade)";
+        SqlCommand comando = new SqlCommand(insercao, conexaoBD);
+        comando.Parameters.AddWithValue("@estacao", arrecadacao.EstacaoDoAno);
+        comando.Parameters.AddWithValue("@areadearrecadacao", arrecadacao.AreaDeArrecadacao);
+        comando.Parameters.AddWithValue("@arrecadado", arrecadacao.Arrecadado);
+        comando.Parameters.AddWithValue("@quantidade", arrecadacao.Quantidade);
+    
+        var linhasSalvas = comando.ExecuteNonQuery();
+
+        Retorno(linhasSalvas, "criada");
+    }
+}
+
+static void SalvarArea(Area area)
+{
+    using (var conexaoBD = new SqlConnection(connectionString))
+    {
+        
+        conexaoBD.Open();
+        
+        string pesquisarFamilia = @"SELECT COUNT(*) FROM Familias WHERE ID = @familia";
+        SqlCommand comandoPesquisaFamilia = new SqlCommand(pesquisarFamilia, conexaoBD);
+        comandoPesquisaFamilia.Parameters.AddWithValue("@familia", area.FamiliaDaArea);
+        
+        string pesquisarPoder = @"SELECT COUNT(*) FROM PoderDaFamilia WHERE ID = @poder";
+        SqlCommand comandoPesquisaPoder = new SqlCommand(pesquisarPoder, conexaoBD);
+        comandoPesquisaPoder.Parameters.AddWithValue("@poder", area.NivelDaFamilia);
+
+        string pesquisarFeudo = @"SELECT COUNT(*) FROM MeusFeudos WHERE ID = @feudo";
+        SqlCommand comandoPesquisaFeudo = new SqlCommand(pesquisarFeudo, conexaoBD);
+        comandoPesquisaFeudo.Parameters.AddWithValue("@Feudo", area.FeudoPertencente);
+
+
+        int qtdRegistrosFamilia = (int)comandoPesquisaFamilia.ExecuteScalar();
+        int qtdRegistrosPoder = (int)comandoPesquisaPoder.ExecuteScalar();
+        int qtdRegistrosFeudo = (int)comandoPesquisaFeudo.ExecuteScalar();
+
+        if (qtdRegistrosFamilia == 0 || qtdRegistrosPoder == 0 || qtdRegistrosFeudo == 0)
+        {
+            Console.WriteLine("O ID passado não existe na tabela. Você faltou as aulas com os monges");
+            Console.WriteLine("Redirecionando para o menu atual...");
+            Thread.Sleep(3000);
+            Console.Clear();
+            MenuFeudo();
+        }
+    
+        string insercao = @$"INSERT INTO Areas(FamiliaDaArea, NivelDaFamilia, NomeDaArea, FeudoPertencente) VALUES(@familiaDaArea,@nivelDaFamilia,@nomeDaArea,@feudoPertencente)";
+        SqlCommand comando = new SqlCommand(insercao, conexaoBD);
+        comando.Parameters.AddWithValue("@familiaDaArea", area.FamiliaDaArea);
+        comando.Parameters.AddWithValue("@nivelDaFamilia", area.NivelDaFamilia);
+        comando.Parameters.AddWithValue("@nomeDaArea", area.NomeDaArea);
+        comando.Parameters.AddWithValue("@feudoPertencente", area.FeudoPertencente);
+    
+        var linhasSalvas = comando.ExecuteNonQuery();
+
+        Retorno(linhasSalvas, "criada");
+    }
+}
 
 static void RetornarFeudos()
 {
@@ -917,7 +1308,6 @@ static void RetornarProdutos()
         string pesquisar = @"SELECT * FROM Produtos";
         SqlCommand comando = new SqlCommand(pesquisar, conexaoBD);
         
-        //puxa o conjunto de dados do banco de dados para um DataSet. O método .Fill preenche o dataset com os dados retornado pelo comando sql
         SqlDataAdapter adapter = new SqlDataAdapter(comando);
         DataSet dataSet = new DataSet();
         adapter.Fill(dataSet);
@@ -933,7 +1323,7 @@ static void RetornarProdutos()
     }
 }
 
-//forma refatorada do dataset para o datatable 
+//forma refatorada do dataset para o datatable, fica mais leve
 static void RetornarFamilias()
 {
     using (var conexaoBD = new SqlConnection(connectionString))
@@ -982,25 +1372,121 @@ static void RetornarMembros()
 {
     using (var conexaoBD = new SqlConnection(connectionString))
     {
-        
-        //cria-se o comando sql
+        conexaoBD.Open();
+        //fazer a consulta trazendo a família JOIN
         string pesquisar = @"SELECT * FROM Membros";
         SqlCommand comando = new SqlCommand(pesquisar, conexaoBD);
         
-        //puxa o conjunto de dados do banco de dados para um DataSet. O método .Fill preenche o dataset com os dados retornado pelo comando sql
         SqlDataAdapter adapter = new SqlDataAdapter(comando);
-        DataSet dataSet = new DataSet();
-        adapter.Fill(dataSet);
-        
-        foreach (DataRow row in dataSet.Tables[0].Rows)
+        DataTable dataTable = new DataTable();
+        adapter.Fill(dataTable);
+
+        //preciso colocar pra puxar família também aqui, faz um join lá na consulta
+        foreach (DataRow row in dataTable.Rows)
         {
-        Console.WriteLine($"Nome do membro: {row["Nome"]} //// Identificador (ID): {row ["ID"]}");
-        
+            Console.WriteLine($"Nome do membro: {row["NomeDaFamilia"]} //// Identificador (ID): {row ["ID"]}");
         }
 
     
     }
 }
+
+static void RetornarAreasSeletivo()
+{
+    using (var conexaoBD = new SqlConnection(connectionString))
+    {
+        conexaoBD.Open();
+        //fazer a consulta trazendo a família JOIN
+        string pesquisar = @"SELECT ID, NomeDaArea FROM Areas";
+        SqlCommand comando = new SqlCommand(pesquisar, conexaoBD);
+        
+        SqlDataAdapter adapter = new SqlDataAdapter(comando);
+        DataTable dataTable = new DataTable();
+        adapter.Fill(dataTable);
+
+        foreach (DataRow row in dataTable.Rows)
+        {
+            Console.WriteLine($"Nome da área: {row["NomeDaArea"]} //// Identificador (ID): {row ["ID"]}");
+        }
+
+    
+    }
+}
+
+static void RetornarAreas()
+{
+    using (var conexaoBD = new SqlConnection(connectionString))
+    {
+        conexaoBD.Open();
+        //uniao de quatro tabelas para retornar os valores escritos
+        string pesquisar = @"select Areas.ID, Familias.NomeDaFamilia,PoderDaFamilia.NivelDePoder, Areas.NomeDaArea, MeusFeudos.Nome
+                        from Areas 
+                        JOIN MeusFeudos on MeusFeudos.ID = Areas.FeudoPertencente
+                        JOIN Familias on Familias.ID = Areas.FamiliaDaArea
+                        JOIN PoderDaFamilia on PoderDaFamilia.ID = Areas.NivelDaFamilia";
+        SqlCommand comando = new SqlCommand(pesquisar, conexaoBD);
+        
+        SqlDataAdapter adapter = new SqlDataAdapter(comando);
+        //ler as especificidades no docs do datatable e dataset
+        DataTable dataTable = new DataTable();
+        adapter.Fill(dataTable);
+
+        foreach (DataRow row in dataTable.Rows)
+        {
+            Console.WriteLine($"-----Identificador (ID): {row ["ID"]} / Familia da área: {row["NomeDaFamilia"]} /  Poder da família: {row["NivelDePoder"]} \n/ Nome da área: {row["NomeDaArea"]} / Pertence ao feudo: {row["Nome"]}");
+        }
+    }
+}
+
+static void RetornarEstacoes()
+{
+    using (var conexaoBD = new SqlConnection(connectionString))
+    {
+        conexaoBD.Open();
+        //fazer a consulta trazendo a família JOIN
+        string pesquisar = @"SELECT * FROM Estacoes";
+        SqlCommand comando = new SqlCommand(pesquisar, conexaoBD);
+        
+        SqlDataAdapter adapter = new SqlDataAdapter(comando);
+        DataTable dataTable = new DataTable();
+        adapter.Fill(dataTable);
+
+        foreach (DataRow row in dataTable.Rows)
+        {
+            Console.WriteLine($"Estação: {row["Estacao"]} //// Identificador (ID): {row ["ID"]}");
+        }
+
+    
+    }
+}
+
+static void RetornarArrecadacao()
+{
+    using (var conexaoBD = new SqlConnection(connectionString))
+    {
+        conexaoBD.Open();
+        //uniao de três tabelas para retornar os valores escritos
+        string pesquisar = @"select Arrecadacoes.ID,Areas.NomeDaArea,Produtos.Produto, Arrecadacoes.Quantidade 
+                            from Arrecadacoes 
+                            JOIN Areas on Areas.ID = Arrecadacoes.AreaDeArrecadacao
+                            JOIN Produtos on Arrecadacoes.Arrecadado = Produtos.ID";
+        SqlCommand comando = new SqlCommand(pesquisar, conexaoBD);
+        
+        SqlDataAdapter adapter = new SqlDataAdapter(comando);
+        //ler as especificidades no docs do datatable e dataset
+        DataTable dataTable = new DataTable();
+        adapter.Fill(dataTable);
+
+        foreach (DataRow row in dataTable.Rows)
+        {
+            Console.WriteLine($"Identificador (ID): {row ["ID"]} //// Area de arrecadação: {row["NomeDaArea"]} //// Arrecadado: {row["Produto"]} //// Quantidade: {row["Quantidade"]}");
+        }
+
+    
+    }
+}
+
+
 
 static void Retorno(int linhasAfetadas, string foiFeitoOque)
 {

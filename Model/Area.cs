@@ -1,7 +1,8 @@
-public class Areas
+public class Area
 {
     public int Id{get;set;}
     public int FamiliaDaArea{get;set;}
     public int NivelDaFamilia{get;set;}
-    public int NomeDaArea{get;set;}
+    public string NomeDaArea{get;set;}
+    public int FeudoPertencente{get;set;}
 }

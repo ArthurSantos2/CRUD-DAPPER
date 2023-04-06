@@ -1,4 +1,4 @@
-public class Arrecadacoes
+public class Arrecadacao
 {
     public int Id{get;set;}
     public int EstacaoDoAno{get;set;}
