@@ -3,7 +3,6 @@ using Microsoft.Data.SqlClient;
 
 const string connectionString = "Server=DESKTOP-7V86B4M;Database=MeuFeudo;Integrated Security=True;TrustServerCertificate=True";
 
-//acessando os dados. Ainda fazer o CRUD
 //cadastrar áreas(deve existir familias e poder de familia e feudo cadastrados -> 
 //se fosse com view poderia redirecionar para criá-las)/familias/feudos/arrecadacoes(deve ter estação,areas e produto cadastrado) /
 //produtos/membros da familia (deve ter familia cadastrada)
@@ -11,28 +10,7 @@ const string connectionString = "Server=DESKTOP-7V86B4M;Database=MeuFeudo;Integr
 //alterar arrecadacoes(deve listar produtos, estações e areas)
 //estações não se alteram. alterar membros/produtos/feudos
 //os métodos de exlusão puramente só podem ser feito em: membros
-
-//falta fazer de arrecadação, area
 //não é possível excluir uma área sem excluir sua arrecadação
-
-//maneira de fazer diferente para criar com ADO.NET
-// using (var conexaoBD = new SqlConnection(connectionString))
-// {
-//     conexaoBD.Open();
-//     using(var comando = new SqlCommand())
-//     {
-//         comando.Connection = conexaoBD;
-//         comando.CommandType = System.Data.CommandType.Text;
-//         comando.CommandText = "Select [ID], [NomeDaArea] FROM [Areas]";
-
-//         var reader = comando.ExecuteReader();
-//         while (reader.Read())
-//         {
-//             Console.WriteLine($"{reader.GetInt32(0)} - {reader.GetString(1)}");
-//         }
-//     }
-// }
-
 
 
 
@@ -522,13 +500,13 @@ static void MenuArea()
         var areaModificada = ModificarAreaModelo();
         ModificarArea(id,areaModificada);
         break;
-        // case "EXCLUIR":
-        // Console.WriteLine("Escolha a arrecadacao a ser deletada e digite o ID que identifica ela");
-        // RetornarAreas();
-        // Console.WriteLine("Pode digitar:");
-        // id = int.Parse(Console.ReadLine());
-        // DeletarArea(id);
-        // break;
+        case "EXCLUIR":
+        Console.WriteLine("Escolha a arrecadacao a ser deletada e digite o ID que identifica ela");
+        RetornarAreas();
+        Console.WriteLine("Pode digitar:");
+        id = int.Parse(Console.ReadLine());
+        DeletarArea(id);
+        break;
         case "SAIR":
         Console.WriteLine("Saindo...");
         Thread.Sleep(3000);
@@ -544,6 +522,7 @@ static void MenuArea()
         
     }
 }
+
 
 
 static void CriarProduto()
@@ -659,6 +638,8 @@ static void CriarArea()
     SalvarArea(area);
 }
 
+
+//funcionando com dataset, fica de exemplo
 static void ModificarProduto(int id, Produto produto)
 {
 
@@ -705,7 +686,7 @@ static void ModificarProduto(int id, Produto produto)
 
     }
 }
-//método com padrão diferente do de produto, melhorado.
+//refatorado e aplicado nos demais de update.
 static void ModificarFeudo(int id, MeuFeudo nome)
 {
     //codigo refatorado com a exclusão do uso do DataSet, simplificação na consulta da existência de um dado.
@@ -727,7 +708,7 @@ static void ModificarFeudo(int id, MeuFeudo nome)
             MenuFeudo();
         }
         
-        string modificar = @$"UPDATE MeusFeudos SET Nome = {nome} WHERE ID = {id}";
+        string modificar = @"UPDATE MeusFeudos SET Nome = @Nome WHERE ID = @id";
         SqlCommand comandoModificar = new SqlCommand(modificar, conexaoBD);
         comandoModificar.Parameters.AddWithValue("@Nome", nome.Nome);
         comandoModificar.Parameters.AddWithValue("@ID", id);
@@ -886,7 +867,6 @@ static void ModificarArrecadacao(int id, Arrecadacao arrecadacao)
 
 static void ModificarArea(int id, Area area)
 {
-    //seria interessante ter uma validação nos dados que tem relacionamento para não quebrar, porém desnecessário no momento
     using (var conexaoBD = new SqlConnection(connectionString))
     {
         conexaoBD.Open();
@@ -934,6 +914,8 @@ static void ModificarArea(int id, Area area)
         Retorno(linhasModificadas, "Modificadas");
     }
 }
+
+
 
 static Arrecadacao ModificarArrecadacaoModelo()
 {
@@ -1017,6 +999,8 @@ static Area ModificarAreaModelo()
     return area;
 }
 
+
+
 static void DeletarMembro(int id)
 {
     
@@ -1047,11 +1031,27 @@ static void DeletarArrecadacao(int id)
     }
 }
 
-//colocar o deletar área depois, necessita que ao deletar leve antes as arrecadações dela. Já tem o exemplo no projeto
-// static void DeletarArea()
-// {
+//DeletarArea área necessita que ao deletar leve antes as arrecadações vinculadas a área
+static void DeletarArea(int id)
+{
+    using (var conexaoBD = new SqlConnection(connectionString))
+    {
+    conexaoBD.Open();
 
-// }
+        string excluir = @$"DELETE Arrecadacoes
+                            FROM Arrecadacoes
+                            JOIN Areas ON Arrecadacoes.AreaDeArrecadacao = Areas.ID
+                            WHERE Arrecadacoes.AreaDeArrecadacao = {id}
+        
+                            DELETE Areas FROM Areas WHERE Areas.ID = {id}";
+        SqlCommand comando = new SqlCommand(excluir, conexaoBD);
+        
+
+        int linhaExcluida = comando.ExecuteNonQuery();
+
+        Retorno(linhaExcluida, "Modificadas");
+    }
+}
 
 //erro resolvido com interpolação
 static void ExtinguirFamilia(int id)
@@ -1085,6 +1085,7 @@ static void ExtinguirFamilia(int id)
         
     }
 }
+
 
 
 static void SalvarProduto(Produto produto)
@@ -1274,6 +1275,10 @@ static void SalvarArea(Area area)
     }
 }
 
+
+//dataset, a sua utilização é ampla pela possibilidade de ser preenchido com diferentes 
+//fontes, ex: um xml. O uso de DataSet's é interessante em determinados contexto, porém não o atual
+//funcionando com dataset, fica de exemplo 
 static void RetornarFeudos()
 {
     using (var conexaoBD = new SqlConnection(connectionString))
@@ -1299,31 +1304,7 @@ static void RetornarFeudos()
     }
 }
 
-static void RetornarProdutos()
-{
-    using (var conexaoBD = new SqlConnection(connectionString))
-    {
-        conexaoBD.Open();
-        //cria-se o comando sql
-        string pesquisar = @"SELECT * FROM Produtos";
-        SqlCommand comando = new SqlCommand(pesquisar, conexaoBD);
-        
-        SqlDataAdapter adapter = new SqlDataAdapter(comando);
-        DataSet dataSet = new DataSet();
-        adapter.Fill(dataSet);
-        
-        
-        foreach (DataRow row in dataSet.Tables[0].Rows)
-        {
-        Console.WriteLine($"Produto: {row["Produto"]} //// Identificador (ID): {row ["ID"]}");
-        
-        }
-
-    
-    }
-}
-
-//forma refatorada do dataset para o datatable, fica mais leve
+//funcionando com datatable, fica de exemplo
 static void RetornarFamilias()
 {
     using (var conexaoBD = new SqlConnection(connectionString))
@@ -1333,160 +1314,147 @@ static void RetornarFamilias()
         string consulta = @"SELECT NomeDaFamilia, ID FROM Familias";
         SqlCommand comando = new SqlCommand(consulta, conexaoBD);
 
-        //puxa o conjunto de dados do banco de dados para um DataTable. O método .Fill preenche o datatable com os dados retornado pelo comando sql, o que torna mais eficiente por se tratar apenas de uma tabela
+        //puxa o conjunto de dados do banco de dados para um DataTable. O método .Fill preenche o datatable com os dados retornado pelo comando sql
         SqlDataAdapter adapter = new SqlDataAdapter(comando);
         DataTable dataTable = new DataTable();
         adapter.Fill(dataTable);
 
         foreach (DataRow row in dataTable.Rows)
         {
-            Console.WriteLine($"Nome da Família: {row["NomeDaFamilia"]} //// Identificador (ID): {row ["ID"]}");
+            Console.WriteLine($"Nome da Família: {row["NomeDaFamilia"]} //// Identificador (ID): {row["ID"]}");
         }
-
-
-    
     }
 }
 
+//refatorado, menor, mais simples e com economia de dados em memória
+static void RetornarProdutos()
+{
+    using (var conexaoBD = new SqlConnection(connectionString))
+    {
+        conexaoBD.Open();
+        string listar = @"SELECT * FROM Produtos";
+        SqlCommand comando = new SqlCommand(listar, conexaoBD);
+        var reader = comando.ExecuteReader();
+
+        while (reader.Read())
+        {
+            Console.WriteLine($"Produto: {reader["Produto"]} //// Identificador (ID): {reader["ID"]}");
+        }
+    }
+}
+
+//refatorado, menor, mais simples e com economia de dados em memória
 static void RetornarPoderFamilia()
 {
     using (var conexaoBD = new SqlConnection(connectionString))
     {
         conexaoBD.Open();
-        //cria-se o comando sql
-        string consulta = @"SELECT NivelDePoder,ID FROM PoderDaFamilia";
-        SqlCommand comando = new SqlCommand(consulta, conexaoBD);
+        string listar =  @"SELECT * FROM PoderDaFamilia";
+        SqlCommand comando = new SqlCommand(listar, conexaoBD);
+        var reader = comando.ExecuteReader();
 
-        SqlDataAdapter adapter = new SqlDataAdapter(comando);
-        DataTable dataTable = new DataTable();
-        adapter.Fill(dataTable);
-
-        foreach (DataRow row in dataTable.Rows)
+        while (reader.Read())
         {
-            Console.WriteLine($"Nivel da Família: {row["NivelDePoder"]} //// Identificador (ID): {row ["ID"]}");
+            Console.WriteLine($"Nivel da Família: {reader["NivelDePoder"]} //// Identificador (ID): {reader ["ID"]}");
         }
     }
 }
 
+//refatorado, menor, mais simples e com economia de dados em memória
 static void RetornarMembros()
 {
     using (var conexaoBD = new SqlConnection(connectionString))
     {
         conexaoBD.Open();
-        //fazer a consulta trazendo a família JOIN
-        string pesquisar = @"SELECT * FROM Membros";
-        SqlCommand comando = new SqlCommand(pesquisar, conexaoBD);
-        
-        SqlDataAdapter adapter = new SqlDataAdapter(comando);
-        DataTable dataTable = new DataTable();
-        adapter.Fill(dataTable);
+        string listar = @"SELECT * FROM Membros";;
+        SqlCommand comando = new SqlCommand(listar, conexaoBD);
+        var reader = comando.ExecuteReader();
 
-        //preciso colocar pra puxar família também aqui, faz um join lá na consulta
-        foreach (DataRow row in dataTable.Rows)
+        while (reader.Read())
         {
-            Console.WriteLine($"Nome do membro: {row["NomeDaFamilia"]} //// Identificador (ID): {row ["ID"]}");
+            Console.WriteLine($"Nome do membro: {reader["Nome"]} //// Identificador (ID): {reader ["ID"]}");
         }
-
-    
     }
 }
 
+//refatorado, menor, mais simples e com economia de dados em memória
 static void RetornarAreasSeletivo()
 {
     using (var conexaoBD = new SqlConnection(connectionString))
     {
         conexaoBD.Open();
-        //fazer a consulta trazendo a família JOIN
-        string pesquisar = @"SELECT ID, NomeDaArea FROM Areas";
-        SqlCommand comando = new SqlCommand(pesquisar, conexaoBD);
+        string listar = @"SELECT ID, NomeDaArea FROM Areas";;
+        SqlCommand comando = new SqlCommand(listar, conexaoBD);
         
-        SqlDataAdapter adapter = new SqlDataAdapter(comando);
-        DataTable dataTable = new DataTable();
-        adapter.Fill(dataTable);
-
-        foreach (DataRow row in dataTable.Rows)
+        var reader = comando.ExecuteReader();
+        while (reader.Read())
         {
-            Console.WriteLine($"Nome da área: {row["NomeDaArea"]} //// Identificador (ID): {row ["ID"]}");
+            Console.WriteLine($"Nome da área: {reader["NomeDaArea"]} //// Identificador (ID): {reader ["ID"]}");
         }
-
-    
     }
 }
 
+//refatorado, menor, mais simples e com economia de dados em memória
 static void RetornarAreas()
 {
     using (var conexaoBD = new SqlConnection(connectionString))
     {
         conexaoBD.Open();
-        //uniao de quatro tabelas para retornar os valores escritos
-        string pesquisar = @"select Areas.ID, Familias.NomeDaFamilia,PoderDaFamilia.NivelDePoder, Areas.NomeDaArea, MeusFeudos.Nome
+        string listar = @"select Areas.ID, Familias.NomeDaFamilia,PoderDaFamilia.NivelDePoder, Areas.NomeDaArea, MeusFeudos.Nome
                         from Areas 
                         JOIN MeusFeudos on MeusFeudos.ID = Areas.FeudoPertencente
                         JOIN Familias on Familias.ID = Areas.FamiliaDaArea
                         JOIN PoderDaFamilia on PoderDaFamilia.ID = Areas.NivelDaFamilia";
-        SqlCommand comando = new SqlCommand(pesquisar, conexaoBD);
-        
-        SqlDataAdapter adapter = new SqlDataAdapter(comando);
-        //ler as especificidades no docs do datatable e dataset
-        DataTable dataTable = new DataTable();
-        adapter.Fill(dataTable);
+        SqlCommand comando = new SqlCommand(listar, conexaoBD);
+        var reader = comando.ExecuteReader();
 
-        foreach (DataRow row in dataTable.Rows)
+        while (reader.Read())
         {
-            Console.WriteLine($"-----Identificador (ID): {row ["ID"]} / Familia da área: {row["NomeDaFamilia"]} /  Poder da família: {row["NivelDePoder"]} \n/ Nome da área: {row["NomeDaArea"]} / Pertence ao feudo: {row["Nome"]}");
+            Console.WriteLine($@"-----Identificador (ID): {reader ["ID"]} / Familia da área: {reader["NomeDaFamilia"]} /  Poder da família: {reader["NivelDePoder"]} \n/
+                                Nome da área: {reader["NomeDaArea"]} / Pertence ao feudo: {reader["Nome"]}");
         }
     }
 }
 
+//refatorado, menor, mais simples e com economia de dados em memória
 static void RetornarEstacoes()
 {
     using (var conexaoBD = new SqlConnection(connectionString))
     {
         conexaoBD.Open();
-        //fazer a consulta trazendo a família JOIN
-        string pesquisar = @"SELECT * FROM Estacoes";
-        SqlCommand comando = new SqlCommand(pesquisar, conexaoBD);
-        
-        SqlDataAdapter adapter = new SqlDataAdapter(comando);
-        DataTable dataTable = new DataTable();
-        adapter.Fill(dataTable);
+        string listar = @"SELECT * FROM Estacoes";
+        SqlCommand comando = new SqlCommand(listar, conexaoBD);
+        var reader = comando.ExecuteReader();
 
-        foreach (DataRow row in dataTable.Rows)
+        while (reader.Read())
         {
-            Console.WriteLine($"Estação: {row["Estacao"]} //// Identificador (ID): {row ["ID"]}");
+            Console.WriteLine($"Identificador (ID): {reader["ID"]} - Estação: {reader["Estacao"]}");
         }
-
-    
     }
 }
 
+//refatorado, menor, mais simples e com economia de dados em memória
 static void RetornarArrecadacao()
 {
+    
     using (var conexaoBD = new SqlConnection(connectionString))
     {
-        conexaoBD.Open();
-        //uniao de três tabelas para retornar os valores escritos
-        string pesquisar = @"select Arrecadacoes.ID,Areas.NomeDaArea,Produtos.Produto, Arrecadacoes.Quantidade 
-                            from Arrecadacoes 
-                            JOIN Areas on Areas.ID = Arrecadacoes.AreaDeArrecadacao
-                            JOIN Produtos on Arrecadacoes.Arrecadado = Produtos.ID";
-        SqlCommand comando = new SqlCommand(pesquisar, conexaoBD);
-        
-        SqlDataAdapter adapter = new SqlDataAdapter(comando);
-        //ler as especificidades no docs do datatable e dataset
-        DataTable dataTable = new DataTable();
-        adapter.Fill(dataTable);
+    conexaoBD.Open();
+    string listar = @"select Arrecadacoes.ID,Areas.NomeDaArea,Produtos.Produto, Arrecadacoes.Quantidade 
+                    from Arrecadacoes 
+                    JOIN Areas on Areas.ID = Arrecadacoes.AreaDeArrecadacao
+                    JOIN Produtos on Arrecadacoes.Arrecadado = Produtos.ID";
+    SqlCommand comando = new SqlCommand(listar, conexaoBD);
 
-        foreach (DataRow row in dataTable.Rows)
-        {
-            Console.WriteLine($"Identificador (ID): {row ["ID"]} //// Area de arrecadação: {row["NomeDaArea"]} //// Arrecadado: {row["Produto"]} //// Quantidade: {row["Quantidade"]}");
-        }
-
+    var reader = comando.ExecuteReader();
+    while (reader.Read())
+    {
+        Console.WriteLine($"Identificador (ID): {reader["ID"]} - Área de Arrecadação: {reader["NomeDaArea"]} - Produto: {reader["Produto"]} - Quantidade: {reader["Quantidade"]}");
+    }
     
     }
+    
 }
-
-
 
 static void Retorno(int linhasAfetadas, string foiFeitoOque)
 {
