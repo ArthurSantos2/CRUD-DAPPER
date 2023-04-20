@@ -5,7 +5,7 @@ using Microsoft.Data.SqlClient;
 const string connectionString = "Server=DESKTOP-7V86B4M;Database=MeuFeudo;Integrated Security=True;TrustServerCertificate=True";
 
 
-MenuProduto();
+Menu();
 
 //esses não precisam mudar
 static void Menu()
@@ -630,7 +630,7 @@ static void CriarArea()
 }
 
 
-
+//atualizado
 static void ModificarProduto(int id, Produto produto)
 {
     
@@ -646,7 +646,7 @@ static void ModificarProduto(int id, Produto produto)
         Console.WriteLine("Redirecionando para o menu atual...");
         Thread.Sleep(3000);
         Console.Clear();
-        MenuFeudo();
+        MenuProduto();
     } 
 
     var linhaSalvas = conexaoBD.Execute(modificar, new{produto = produto.NomeDoProduto, id = id});
@@ -656,231 +656,159 @@ static void ModificarProduto(int id, Produto produto)
     }
 }
 
+//atualizadoPRECISATESTAR
 static void ModificarFeudo(int id, MeuFeudo nome)
 {
-    //codigo refatorado com a exclusão do uso do DataSet, simplificação na consulta da existência de um dado.
+
+    string pesquisar = @"SELECT COUNT(*) FROM MeusFeudos WHERE ID = @identificador";
+    string modificar = @"UPDATE MeusFeudos SET Nome = @Nome WHERE ID = @id";
+
     using (var conexaoBD = new SqlConnection(connectionString))
     {
-        conexaoBD.Open();
-        
-        string pesquisar = @$"SELECT COUNT(*) FROM MeusFeudos WHERE ID = {id}";
-        SqlCommand comandoPesquisa = new SqlCommand(pesquisar, conexaoBD);
-        comandoPesquisa.Parameters.AddWithValue("@ID", id);
-        
-        int qtdRegistros = (int)comandoPesquisa.ExecuteScalar();
-        if (qtdRegistros == 0)
-        {
-            Console.WriteLine("O ID passado não existe na tabela. Você faltou as aulas com os monges");
-            Console.WriteLine("Redirecionando para o menu atual...");
-            Thread.Sleep(3000);
-            Console.Clear();
-            MenuFeudo();
-        }
-        
-        string modificar = @"UPDATE MeusFeudos SET Nome = @Nome WHERE ID = @id";
-        SqlCommand comandoModificar = new SqlCommand(modificar, conexaoBD);
-        comandoModificar.Parameters.AddWithValue("@Nome", nome.Nome);
-        comandoModificar.Parameters.AddWithValue("@ID", id);
+    int qtdRegistros = conexaoBD.ExecuteScalar<int>(pesquisar, new { identificador = id });
+    if (qtdRegistros == 0)
+    {
+        Console.WriteLine("O ID passado não existe na tabela. Você faltou as aulas com os monges");
+        Console.WriteLine("Redirecionando para o menu atual...");
+        Thread.Sleep(3000);
+        Console.Clear();
+        MenuFeudo();
+    } 
 
-        int linhasModificadas = comandoModificar.ExecuteNonQuery();
+    var linhaSalvas = conexaoBD.Execute(modificar, new{nome = nome.Nome, id = id});
 
-        Retorno(linhasModificadas, "Modificadas");
+    Retorno(linhaSalvas, "modificado");
+
     }
 }
 
+//atualizadoPRECISATESTAR
 static void ModificarFamilia(int id, Familia nomeFamilia)
 {
-    //codigo refatorado com a exclusão do uso do DataSet, simplificação na consulta da existência de um dado.
+    string pesquisar = @"SELECT COUNT(*) FROM Familias WHERE ID = @identificador";
+    string modificar = @"UPDATE Familias SET NomeDaFamilia = @nomeFamilia WHERE ID = @id";
     using (var conexaoBD = new SqlConnection(connectionString))
     {
-        conexaoBD.Open();
-        
-        string pesquisar = @$"SELECT COUNT(*) FROM Familias WHERE ID = @id";
-        SqlCommand comandoPesquisa = new SqlCommand(pesquisar, conexaoBD);
-        comandoPesquisa.Parameters.AddWithValue("@id", id);
-        
-        int qtdRegistros = (int)comandoPesquisa.ExecuteScalar();
-        if (qtdRegistros == 0)
-        {
-            Console.WriteLine("O ID passado não existe na tabela. Você faltou as aulas com os monges");
-            Console.WriteLine("Redirecionando para o menu atual...");
-            Thread.Sleep(3000);
-            Console.Clear();
-            MenuFeudo();
-        }
-        
-        string modificar = @"UPDATE Familias SET NomeDaFamilia = @nomeFamilia WHERE ID = @id";
-        SqlCommand comandoModificar = new SqlCommand(modificar, conexaoBD);
-        comandoModificar.Parameters.AddWithValue("@nomeFamilia", nomeFamilia.NomeDaFamilia);
-        comandoModificar.Parameters.AddWithValue("@id", id);
+    int qtdRegistros = conexaoBD.ExecuteScalar<int>(pesquisar, new { identificador = id });
+    if (qtdRegistros == 0)
+    {
+        Console.WriteLine("O ID passado não existe na tabela. Você faltou as aulas com os monges");
+        Console.WriteLine("Redirecionando para o menu atual...");
+        Thread.Sleep(3000);
+        Console.Clear();
+        MenuFamilia();
+    } 
 
-        int linhasModificadas = comandoModificar.ExecuteNonQuery();
+    var linhaSalvas = conexaoBD.Execute(modificar, new{nomeFamilia = nomeFamilia.NomeDaFamilia, id = id});
 
-        Retorno(linhasModificadas, "Modificadas");
+    Retorno(linhaSalvas, "modificado");
     }
 }
 
+//atualizadoPRECISATESTAR
 static void ModificarMembro(int id, Membro membro)
 {
-    //codigo refatorado com a exclusão do uso do DataSet, simplificação na consulta da existência de um dado.
+    string pesquisar = @"SELECT COUNT(*) FROM Membros WHERE ID = @identificador";
+    string modificar = @"UPDATE Membros SET Nome = @nome, Familia = @familia WHERE ID = @id";
+    string pesquisa = @"SELECT COUNT(*) FROM Familias WHERE ID = @identificado";
+
     using (var conexaoBD = new SqlConnection(connectionString))
     {
-        conexaoBD.Open();
-        
-        string pesquisar = @$"SELECT COUNT(*) FROM Membros WHERE ID = @id";
-        SqlCommand comandoPesquisa = new SqlCommand(pesquisar, conexaoBD);
-        comandoPesquisa.Parameters.AddWithValue("@id", id);
-        
-        int qtdRegistros = (int)comandoPesquisa.ExecuteScalar();
-        if (qtdRegistros == 0)
-        {
-            Console.WriteLine("O ID passado não existe na tabela. Você faltou as aulas com os monges");
-            Console.WriteLine("Redirecionando para o menu atual...");
-            Thread.Sleep(3000);
-            Console.Clear();
-            MenuMembro();
-        }
+    int qtdRegistros = conexaoBD.ExecuteScalar<int>(pesquisar, new { identificador = id });
+    int qtdRegistross = conexaoBD.ExecuteScalar<int>(pesquisa, new { identificado = membro.Familia});
+    if (qtdRegistros == 0 || qtdRegistross == 0)
+    {
+        Console.WriteLine("O ID passado não existe na tabela. Você faltou as aulas com os monges");
+        Console.WriteLine("Redirecionando para o menu atual...");
+        Thread.Sleep(3000);
+        Console.Clear();
+        MenuMembro();
+    } 
 
-        string pesquisa = @$"SELECT COUNT(*) FROM Familias WHERE ID = @identificador";
-        SqlCommand comandoPesquisar = new SqlCommand(pesquisar, conexaoBD);
-        comandoPesquisa.Parameters.AddWithValue("@identificador", membro.Familia);
-        
-        int qtdRegistro = (int)comandoPesquisa.ExecuteScalar();
-        if (qtdRegistros == 0)
-        {
-            Console.WriteLine("O ID passado não existe na tabela. Você faltou as aulas com os monges");
-            Console.WriteLine("Redirecionando para o menu atual...");
-            Thread.Sleep(3000);
-            Console.Clear();
-            MenuMembro();
-        }
+    var linhaSalvas = conexaoBD.Execute(modificar, new{nome = membro.Nome, familia = membro.Familia, id = id});
 
-        
-        string modificar = @"UPDATE Membros SET Nome = @nome, Familia = @familia WHERE ID = @identificado";
-        SqlCommand comandoModificar = new SqlCommand(modificar, conexaoBD);
-        comandoModificar.Parameters.AddWithValue("@nome", membro.Nome);
-        comandoModificar.Parameters.AddWithValue("@familia", membro.Familia);
-        comandoModificar.Parameters.AddWithValue("@identificado", id);
-
-        int linhasModificadas = comandoModificar.ExecuteNonQuery();
-
-        Retorno(linhasModificadas, "Modificadas");
+    Retorno(linhaSalvas, "modificado");
     }
 }
 
+//atualizadoPRECISATESTAR
 static void ModificarPoderFamilia(int id, PoderDaFamilia nivel)
 {
-    //codigo refatorado com a exclusão do uso do DataSet, simplificação na consulta da existência de um dado.
+    string pesquisar = @"SELECT COUNT(*) FROM PoderDaFamilia WHERE ID = @identificador";
+    string modificar = @"UPDATE PoderDaFamilia SET NivelDePoder = @nivel WHERE ID = @id";
+
     using (var conexaoBD = new SqlConnection(connectionString))
     {
-        conexaoBD.Open();
-        
-        string pesquisar = @$"SELECT COUNT(*) FROM PoderDaFamilia WHERE ID = @id";
-        SqlCommand comandoPesquisa = new SqlCommand(pesquisar, conexaoBD);
-        comandoPesquisa.Parameters.AddWithValue("@id", id);
-        
-        int qtdRegistros = (int)comandoPesquisa.ExecuteScalar();
-        if (qtdRegistros == 0)
-        {
-            Console.WriteLine("O ID passado não existe na tabela. Você faltou as aulas com os monges");
-            Console.WriteLine("Redirecionando para o menu atual...");
-            Thread.Sleep(3000);
-            Console.Clear();
-            MenuFeudo();
-        }
-        
-        string modificar = @"UPDATE PoderDaFamilia SET NivelDePoder = @nivel WHERE ID = @id";
-        SqlCommand comandoModificar = new SqlCommand(modificar, conexaoBD);
-        comandoModificar.Parameters.AddWithValue("@nivel", nivel.NivelDePoder);
-        comandoModificar.Parameters.AddWithValue("@id", id);
+    int qtdRegistros = conexaoBD.ExecuteScalar<int>(pesquisar, new { identificador = id });
+    if (qtdRegistros == 0)
+    {
+        Console.WriteLine("O ID passado não existe na tabela. Você faltou as aulas com os monges");
+        Console.WriteLine("Redirecionando para o menu atual...");
+        Thread.Sleep(3000);
+        Console.Clear();
+        MenuPoderFamilia();
+    } 
 
-        int linhasModificadas = comandoModificar.ExecuteNonQuery();
+    var linhaSalvas = conexaoBD.Execute(modificar, new{nivel = nivel.NivelDePoder, id = id});
 
-        Retorno(linhasModificadas, "Modificadas");
+    Retorno(linhaSalvas, "modificado");
     }
 }
 
+//AtualizadoPRECISATESTAR
 static void ModificarArrecadacao(int id, Arrecadacao arrecadacao)
 {
-    //seria interessante ter uma validação nos dados que tem relacionamento para não quebrar, porém desnecessário no momento
+    string pesquisar = @$"SELECT COUNT(*) FROM Arrecadacoes WHERE ID = @identificador";
+    string modificar = @"UPDATE Arrecadacoes SET AreaDeArrecadacao = @areadearrecadacao, Arrecadado = @arrecadado, Quantidade = @quantidade WHERE ID = @id";
+    string pesquisa = @"SELECT COUNT(*) FROM Areas WHERE ID = @identificado";
     using (var conexaoBD = new SqlConnection(connectionString))
     {
-        conexaoBD.Open();
-        
-        string pesquisar = @$"SELECT COUNT(*) FROM Arrecadacoes WHERE ID = @id";
-        SqlCommand comandoPesquisa = new SqlCommand(pesquisar, conexaoBD);
-        comandoPesquisa.Parameters.AddWithValue("@id", id);
-        
-        int qtdRegistros = (int)comandoPesquisa.ExecuteScalar();
-        if (qtdRegistros == 0)
-        {
-            Console.WriteLine("O ID passado não existe na tabela. Você faltou as aulas com os monges");
-            Console.WriteLine("Redirecionando para o menu atual...");
-            Thread.Sleep(3000);
-            Console.Clear();
-            MenuFeudo();
-        }
-        //não colocarei estação do ano
-        string modificar = @"UPDATE Arrecadacoes SET AreaDeArrecadacao = @areadearrecadacao, Arrecadado = @arrecadado, Quantidade = @quantidade WHERE ID = @id";
-        SqlCommand comandoModificar = new SqlCommand(modificar, conexaoBD);
-        comandoModificar.Parameters.AddWithValue("@areadearrecadacao", arrecadacao.AreaDeArrecadacao);
-        comandoModificar.Parameters.AddWithValue("@arrecadado", arrecadacao.Arrecadado);
-        comandoModificar.Parameters.AddWithValue("@quantidade", arrecadacao.Quantidade);
-        comandoModificar.Parameters.AddWithValue("@id", id);
+    int qtdRegistros = conexaoBD.ExecuteScalar<int>(pesquisar, new { identificador = id });
+    int qtdRegistross = conexaoBD.ExecuteScalar<int>(pesquisa, new { identificado = arrecadacao.AreaDeArrecadacao});
+    if (qtdRegistros == 0 || qtdRegistross == 0)
+    {
+        Console.WriteLine("O ID passado não existe na tabela. Você faltou as aulas com os monges");
+        Console.WriteLine("Redirecionando para o menu atual...");
+        Thread.Sleep(3000);
+        Console.Clear();
+        MenuArrecadacao();
+    } 
 
-        int linhasModificadas = comandoModificar.ExecuteNonQuery();
+    var linhaSalvas = conexaoBD.Execute(modificar, new{areadearrecadacao = arrecadacao.AreaDeArrecadacao, arrecadado = arrecadacao.Arrecadado, quantidade = arrecadacao.Quantidade, id = id});
 
-        Retorno(linhasModificadas, "Modificadas");
+    Retorno(linhaSalvas, "modificado");
     }
 }
 
+//AtualizadoPRECISATESTAR
 static void ModificarArea(int id, Area area)
 {
+    string pesquisar = @$"SELECT COUNT(*) FROM Areas WHERE ID = @identificador";
+    string pesquisarFamilia = @"SELECT COUNT(*) FROM Familias WHERE ID = @familia";
+    string pesquisarPoder = @"SELECT COUNT(*) FROM PoderDaFamilia WHERE ID = @poder";
+    string pesquisarFeudo = @"SELECT COUNT(*) FROM MeusFeudos WHERE ID = @feudo";
+    string modificar = @"UPDATE Areas SET FamiliaDaArea = @familiaDaArea, NivelDaFamilia = @nivelDaFamilia, NomeDaArea = @nomeDaArea, FeudoPertencente = @feudoPertencente WHERE ID = @id";
+
     using (var conexaoBD = new SqlConnection(connectionString))
     {
-        conexaoBD.Open();
-        
-        string pesquisar = @$"SELECT COUNT(*) FROM Areas WHERE ID = @id";
-        SqlCommand comandoPesquisa = new SqlCommand(pesquisar, conexaoBD);
-        comandoPesquisa.Parameters.AddWithValue("@id", id);
+    
+    int qtdRegistros = conexaoBD.ExecuteScalar<int>(pesquisar, new { identificador = id});
+    int qtdRegistrosFamilia = conexaoBD.ExecuteScalar<int>(pesquisarFamilia, new { familia = area.FamiliaDaArea });
+    int qtdRegistrosPoder = conexaoBD.ExecuteScalar<int>(pesquisarPoder, new { poder = area.NivelDaFamilia });
+    int qtdRegistrosFeudo = conexaoBD.ExecuteScalar<int>(pesquisarFeudo, new { feudo = area.FeudoPertencente });
+    
+    if (qtdRegistros == 0 || qtdRegistrosFamilia == 0 || qtdRegistrosPoder == 0 || qtdRegistrosFeudo == 0)
+    {
+        Console.WriteLine("O ID passado não existe na tabela. Você faltou as aulas com os monges");
+        Console.WriteLine("Redirecionando para o menu atual...");
+        Thread.Sleep(3000);
+        //Console.Clear();
+        MenuArea();
+    } 
 
-        string pesquisarFamilia = @"SELECT COUNT(*) FROM Familias WHERE ID = @familia";
-        SqlCommand comandoPesquisaFamilia = new SqlCommand(pesquisarFamilia, conexaoBD);
-        comandoPesquisaFamilia.Parameters.AddWithValue("@familia", area.FamiliaDaArea);
-        
-        string pesquisarPoder = @"SELECT COUNT(*) FROM PoderDaFamilia WHERE ID = @poder";
-        SqlCommand comandoPesquisaPoder = new SqlCommand(pesquisarPoder, conexaoBD);
-        comandoPesquisaPoder.Parameters.AddWithValue("@poder", area.NivelDaFamilia);
+    var linhaSalvas = conexaoBD.Execute(modificar, new{familiaDaArea = area.FamiliaDaArea, nivelDaFamilia = area.NivelDaFamilia, nomeDaArea = area.NomeDaArea, feudoPertencente = area.FeudoPertencente, id = id});
 
-        string pesquisarFeudo = @"SELECT COUNT(*) FROM MeusFeudos WHERE ID = @feudo";
-        SqlCommand comandoPesquisaFeudo = new SqlCommand(pesquisarFeudo, conexaoBD);
-        comandoPesquisaFeudo.Parameters.AddWithValue("@Feudo", area.FeudoPertencente);
-
-        int qtdRegistrosFamilia = (int)comandoPesquisaFamilia.ExecuteScalar();
-        int qtdRegistrosPoder = (int)comandoPesquisaPoder.ExecuteScalar();
-        int qtdRegistrosFeudo = (int)comandoPesquisaFeudo.ExecuteScalar();
-        int qtdRegistros = (int)comandoPesquisa.ExecuteScalar();
-
-        if (qtdRegistros == 0 || qtdRegistrosFamilia == 0 || qtdRegistrosPoder == 0 || qtdRegistrosFeudo == 0)
-        {
-            Console.WriteLine("O ID passado não inexiste. Você faltou as aulas com os monges");
-            Console.WriteLine("Redirecionando para o menu atual...");
-            Thread.Sleep(3000);
-            Console.Clear();
-            MenuFeudo();
-        }
-        
-        string modificar = @$"UPDATE Areas SET FamiliaDaArea = @familiaDaArea, NivelDaFamilia = @nivelDaFamilia, NomeDaArea = @nomeDaArea, FeudoPertencente = @feudoPertencente WHERE ID = @id";
-        SqlCommand comandoModificar = new SqlCommand(modificar, conexaoBD);
-        comandoModificar.Parameters.AddWithValue("@familiaDaArea", area.FamiliaDaArea);
-        comandoModificar.Parameters.AddWithValue("@nivelDaFamilia", area.NivelDaFamilia);
-        comandoModificar.Parameters.AddWithValue("@nomeDaArea", area.NomeDaArea);
-        comandoModificar.Parameters.AddWithValue("@feudoPertencente", area.FeudoPertencente);
-        comandoModificar.Parameters.AddWithValue("@id", id);
-
-        int linhasModificadas = comandoModificar.ExecuteNonQuery();
-
-        Retorno(linhasModificadas, "Modificadas");
+    Retorno(linhaSalvas, "modificado");
     }
 }
 
@@ -1112,6 +1040,7 @@ static void SalvarFamilia(Familia nome)
     }
 }
 
+//atualizado
 static void SalvarMembro(Membro membro)
 {
     string insercao = @$"INSERT INTO Membros(Nome,Familia) VALUES(@nome,@familia)";
@@ -1202,49 +1131,30 @@ static void SalvarArea(Area area)
 }
 
 
-
+//atualizado
 static void RetornarFeudos()
 {
     using (var conexaoBD = new SqlConnection(connectionString))
     {
-        conexaoBD.Open();
-        //cria-se o comando sql
-        string pesquisar = @"SELECT * FROM MeusFeudos";
-        SqlCommand comando = new SqlCommand(pesquisar, conexaoBD);
+        var feudo = conexaoBD.Query<MeuFeudo>("SELECT Nome [Nome], ID [Id] FROM MeusFeudos");
     
-        //puxa o conjunto de dados do banco de dados para um DataSet. O método .Fill preenche o dataset com os dados retornado pelo comando sql
-        SqlDataAdapter adapter = new SqlDataAdapter(comando);
-        DataSet dataSet = new DataSet();
-        adapter.Fill(dataSet);
-        
-        foreach (DataRow row in dataSet.Tables[0].Rows)
+        foreach (var feudos in feudo)
         {
-        Console.WriteLine($"Feudo: {row["Nome"]} //// Identificador (ID): {row ["ID"]}");
-        
+            Console.WriteLine($"Feudo: {feudos.Nome} ////// Identificador (ID):{feudos.Id}");
         }
-
-    
     }
 }
 
-
+//atualizado+
 static void RetornarFamilias()
 {
     using (var conexaoBD = new SqlConnection(connectionString))
     {
-        conexaoBD.Open();
-        //cria-se o comando sql
-        string consulta = @"SELECT NomeDaFamilia, ID FROM Familias";
-        SqlCommand comando = new SqlCommand(consulta, conexaoBD);
-
-        //puxa o conjunto de dados do banco de dados para um DataTable. O método .Fill preenche o datatable com os dados retornado pelo comando sql
-        SqlDataAdapter adapter = new SqlDataAdapter(comando);
-        DataTable dataTable = new DataTable();
-        adapter.Fill(dataTable);
-
-        foreach (DataRow row in dataTable.Rows)
+        var familia = conexaoBD.Query<Familia>("SELECT [ID] AS [Id], [NomeDaFamilia] AS [NomeDaFamilia] FROM Familias");
+    
+        foreach (var familias in familia)
         {
-            Console.WriteLine($"Nome da Família: {row["NomeDaFamilia"]} //// Identificador (ID): {row["ID"]}");
+            Console.WriteLine($"Nome da Família: {familias.NomeDaFamilia} ////// Identificador (ID):{familias.Id}");
         }
     }
 }
@@ -1297,76 +1207,78 @@ static void RetornarAreasSeletivo()
 {
     using (var conexaoBD = new SqlConnection(connectionString))
     {
-        var area = conexaoBD.Query<Membro>("SELECT [ID] AS [Id], [NomeDaArea] AS [NomeDaArea] FROM Areas");
+        var area = conexaoBD.Query<Area>("SELECT [ID] AS [Id], [NomeDaArea] AS [NomeDaArea] FROM Areas");
     
         foreach (var areas in area)
         {
-            Console.WriteLine($"Nome da área: {areas.Nome} ////// Identificador:{areas.Id}");
+            Console.WriteLine($"Nome da área: {areas.NomeDaArea} ////// Identificador:{areas.Id}");
         }
 
     }
 }
 
-
+//atualizado
 static void RetornarAreas()
 {
+    //Aqui, para não utilizar o DYNAMIC, fiz uma classe generica com atributos genericos para passar os dados e ter segurança de tipo e resolver os diferentes métodos
     using (var conexaoBD = new SqlConnection(connectionString))
     {
-        conexaoBD.Open();
-        string listar = @"select Areas.ID, Familias.NomeDaFamilia,PoderDaFamilia.NivelDePoder, Areas.NomeDaArea, MeusFeudos.Nome
+        var areas = conexaoBD.Query<ClasseGenerica<string>>(@"select Areas.ID AS [Id], Familias.NomeDaFamilia AS [AtributoGenerico1], PoderDaFamilia.NivelDePoder [AtributoGenerico2], Areas.NomeDaArea [AtributoGenerico3], MeusFeudos.Nome [AtributoGenerico4]
                         from Areas 
                         JOIN MeusFeudos on MeusFeudos.ID = Areas.FeudoPertencente
                         JOIN Familias on Familias.ID = Areas.FamiliaDaArea
-                        JOIN PoderDaFamilia on PoderDaFamilia.ID = Areas.NivelDaFamilia";
-        SqlCommand comando = new SqlCommand(listar, conexaoBD);
-        var reader = comando.ExecuteReader();
+                        JOIN PoderDaFamilia on PoderDaFamilia.ID = Areas.NivelDaFamilia");
 
-        while (reader.Read())
+        foreach (var area in areas)
         {
-            Console.WriteLine($@"-----Identificador (ID): {reader ["ID"]} / Familia da área: {reader["NomeDaFamilia"]} /  Poder da família: {reader["NivelDePoder"]} \n/
-                                Nome da área: {reader["NomeDaArea"]} / Pertence ao feudo: {reader["Nome"]}");
+            Console.WriteLine($@"-----Identificador (ID): {area.Id} / Familia da área: {area.AtributoGenerico1} /  Poder da família: {area.AtributoGenerico2} Nome da área: {area.AtributoGenerico3} / Pertence ao feudo: {area.AtributoGenerico4}");
         }
     }
+    //utilizar DYNAMIC funciona, porém como é em tempo de execução e há outro modo de resolver, cabe não utilizar
+    // using (var conexaoBD = new SqlConnection(connectionString))
+    // {
+    //     var areas = conexaoBD.Query<dynamic>(@"select Areas.ID, Familias.NomeDaFamilia, PoderDaFamilia.NivelDePoder, Areas.NomeDaArea, MeusFeudos.Nome
+    //                     from Areas 
+    //                     JOIN MeusFeudos on MeusFeudos.ID = Areas.FeudoPertencente
+    //                     JOIN Familias on Familias.ID = Areas.FamiliaDaArea
+    //                     JOIN PoderDaFamilia on PoderDaFamilia.ID = Areas.NivelDaFamilia");
+
+    //     foreach (var area in areas)
+    //     {
+    //         Console.WriteLine($@"-----Identificador (ID): {area.ID} / Familia da área: {area.NomeDaFamilia} /  Poder da família: {area.NivelDePoder} Nome da área: {area.NomeDaArea} / Pertence ao feudo: {area.Nome}");
+    //     }
+    // }
 }
 
-
+//atualizado
 static void RetornarEstacoes()
 {
     using (var conexaoBD = new SqlConnection(connectionString))
     {
-        conexaoBD.Open();
-        string listar = @"SELECT * FROM Estacoes";
-        SqlCommand comando = new SqlCommand(listar, conexaoBD);
-        var reader = comando.ExecuteReader();
-
-        while (reader.Read())
+        var estacao = conexaoBD.Query<Estacao>("SELECT ID [id], Estacao [EstacaoAtual] FROM Estacoes");
+    
+        foreach (var estacoes in estacao)
         {
-            Console.WriteLine($"Identificador (ID): {reader["ID"]} - Estação: {reader["Estacao"]}");
+            Console.WriteLine($"Nome: {estacoes.Id} ////// Identificador:{estacoes.EstacaoAtual}");
         }
     }
 }
 
-
+//atualizado
 static void RetornarArrecadacao()
 {
-    
     using (var conexaoBD = new SqlConnection(connectionString))
     {
-    conexaoBD.Open();
-    string listar = @"select Arrecadacoes.ID,Areas.NomeDaArea,Produtos.Produto, Arrecadacoes.Quantidade 
-                    from Arrecadacoes 
-                    JOIN Areas on Areas.ID = Arrecadacoes.AreaDeArrecadacao
-                    JOIN Produtos on Arrecadacoes.Arrecadado = Produtos.ID";
-    SqlCommand comando = new SqlCommand(listar, conexaoBD);
+        var arrecadacao = conexaoBD.Query<ClasseGenerica<string>>(@"select Arrecadacoes.ID [ID],Areas.NomeDaArea [AtributoGenerico1],Produtos.Produto [AtributoGenerico2], Arrecadacoes.Quantidade [AtributoGenerico3]
+                                                                from Arrecadacoes 
+                                                                JOIN Areas on Areas.ID = Arrecadacoes.AreaDeArrecadacao
+                                                                JOIN Produtos on Arrecadacoes.Arrecadado = Produtos.ID");
 
-    var reader = comando.ExecuteReader();
-    while (reader.Read())
-    {
-        Console.WriteLine($"Identificador (ID): {reader["ID"]} - Área de Arrecadação: {reader["NomeDaArea"]} - Produto: {reader["Produto"]} - Quantidade: {reader["Quantidade"]}");
+        foreach (var arrecadacoes in arrecadacao)
+        {
+            Console.WriteLine($@"-----Identificador (ID): {arrecadacoes.Id} / Área de Arrecadação: {arrecadacoes.AtributoGenerico1} /  Produto: {arrecadacoes.AtributoGenerico2} Quantidade: {arrecadacoes.AtributoGenerico3}");
+        }
     }
-    
-    }
-    
 }
 
 static void Retorno(int linhasAfetadas, string foiFeitoOque)
