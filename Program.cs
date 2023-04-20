@@ -1,22 +1,13 @@
 ﻿using System.Data;
+using Dapper;
 using Microsoft.Data.SqlClient;
 
 const string connectionString = "Server=DESKTOP-7V86B4M;Database=MeuFeudo;Integrated Security=True;TrustServerCertificate=True";
 
-//cadastrar áreas(deve existir familias e poder de familia e feudo cadastrados -> 
-//se fosse com view poderia redirecionar para criá-las)/familias/feudos/arrecadacoes(deve ter estação,areas e produto cadastrado) /
-//produtos/membros da familia (deve ter familia cadastrada)
-//alterar dados de areas (deve listar as opcoes de Poder da familia na area e familias e feudos)/
-//alterar arrecadacoes(deve listar produtos, estações e areas)
-//estações não se alteram. alterar membros/produtos/feudos
-//os métodos de exlusão puramente só podem ser feito em: membros
-//não é possível excluir uma área sem excluir sua arrecadação
 
+MenuProduto();
 
-
-
-Menu();
-
+//esses não precisam mudar
 static void Menu()
 {
     Console.WriteLine("Bom dia, Senhor Feudal. O que gostaria de fazer?");
@@ -524,7 +515,7 @@ static void MenuArea()
 }
 
 
-
+//esses não necessitam mudar
 static void CriarProduto()
 {
     var produto = new Produto();
@@ -639,54 +630,32 @@ static void CriarArea()
 }
 
 
-//funcionando com dataset, fica de exemplo
+
 static void ModificarProduto(int id, Produto produto)
 {
-
-    // if (produto == null)
-    // {
-    //     throw new ApplicationException
-    // }
+    
+    string pesquisar = @"SELECT COUNT(*) FROM Produtos WHERE ID = @identificador";
+    string modificar = @"UPDATE Produtos SET Produto = @produto WHERE ID = @id";
 
     using (var conexaoBD = new SqlConnection(connectionString))
     {
-    conexaoBD.Open();
-
-    string pesquisar = @"SELECT * FROM Produtos";
-    SqlCommand comandando = new SqlCommand(pesquisar, conexaoBD);
-        
-    DataSet dataSet = new DataSet();
-    //puxa o conjunto de dados do banco de dados para um DataSet. O método .Fill preenche o dataset com os dados retornado pelo comando sql
-    SqlDataAdapter adapter = new SqlDataAdapter(comandando);
-    
-    adapter.Fill(dataSet, "Produtos");
-
-    // Verificar se um dado específico existe na tabela
-    DataTable dataTable = dataSet.Tables["Produtos"];
-    bool exists = dataTable.AsEnumerable().Any(row => row.Field<int>("Id") == id);
-    if (exists)
+    int qtdRegistros = conexaoBD.ExecuteScalar<int>(pesquisar, new { identificador = id });
+    if (qtdRegistros == 0)
     {
-        string modificar = @$"UPDATE Produtos SET Produto = @produto WHERE ID = {id}";
-        SqlCommand comando = new SqlCommand(modificar, conexaoBD);
-        comando.Parameters.AddWithValue("@Produto", produto.NomeDoProduto);
-        comando.Parameters.AddWithValue("@ID", id);
+        Console.WriteLine("O ID passado não existe na tabela. Você faltou as aulas com os monges");
+        Console.WriteLine("Redirecionando para o menu atual...");
+        Thread.Sleep(3000);
+        Console.Clear();
+        MenuFeudo();
+    } 
 
-        int linhasModificadas = comando.ExecuteNonQuery();
+    var linhaSalvas = conexaoBD.Execute(modificar, new{produto = produto.NomeDoProduto, id = id});
 
-        Retorno(linhasModificadas, " Modificado");
-    }
-    else
-    {
-    Console.WriteLine("O ID passado não existe na tabela. Você faltou as aulas com os monges");
-    Console.WriteLine("Redirecionando para o menu atual...");
-    Thread.Sleep(3000);
-    Console.Clear();
-    MenuProduto();
-    }
+    Retorno(linhaSalvas, "modificado");
 
     }
 }
-//refatorado e aplicado nos demais de update.
+
 static void ModificarFeudo(int id, MeuFeudo nome)
 {
     //codigo refatorado com a exclusão do uso do DataSet, simplificação na consulta da existência de um dado.
@@ -875,7 +844,7 @@ static void ModificarArea(int id, Area area)
         SqlCommand comandoPesquisa = new SqlCommand(pesquisar, conexaoBD);
         comandoPesquisa.Parameters.AddWithValue("@id", id);
 
-         string pesquisarFamilia = @"SELECT COUNT(*) FROM Familias WHERE ID = @familia";
+        string pesquisarFamilia = @"SELECT COUNT(*) FROM Familias WHERE ID = @familia";
         SqlCommand comandoPesquisaFamilia = new SqlCommand(pesquisarFamilia, conexaoBD);
         comandoPesquisaFamilia.Parameters.AddWithValue("@familia", area.FamiliaDaArea);
         
@@ -916,7 +885,7 @@ static void ModificarArea(int id, Area area)
 }
 
 
-
+//não precisa mudar esses
 static Arrecadacao ModificarArrecadacaoModelo()
 {
     var arrecadado = new Arrecadacao();
@@ -1031,7 +1000,6 @@ static void DeletarArrecadacao(int id)
     }
 }
 
-//DeletarArea área necessita que ao deletar leve antes as arrecadações vinculadas a área
 static void DeletarArea(int id)
 {
     using (var conexaoBD = new SqlConnection(connectionString))
@@ -1053,7 +1021,7 @@ static void DeletarArea(int id)
     }
 }
 
-//erro resolvido com interpolação
+
 static void ExtinguirFamilia(int id)
 {
     using (var conexaoBD = new SqlConnection(connectionString))
@@ -1087,82 +1055,73 @@ static void ExtinguirFamilia(int id)
 }
 
 
-
+//atualizado
 static void SalvarProduto(Produto produto)
 {
 
+   var insercao = @"INSERT INTO Produtos(Produto) VALUES(@NomeDoProduto)";
+
     using (var conexaoBD = new SqlConnection(connectionString))
     {
-        conexaoBD.Open();
-        string insercao = @"INSERT INTO Produtos(Produto) VALUES(@Produto)";
-        SqlCommand comando = new SqlCommand(insercao, conexaoBD);
-        comando.Parameters.Add(new SqlParameter("@Produto", produto.NomeDoProduto));
+        
+        var linhaSalvas = conexaoBD.Execute(insercao, new{NomeDoProduto = produto.NomeDoProduto});
 
-        var linhasSalvas = comando.ExecuteNonQuery();
-
-        Retorno(linhasSalvas, "criado");
+        Retorno(linhaSalvas, "criado");
     }
 }
 
+//atualizado
 static void SalvarPoder(PoderDaFamilia poder)
 {
+    string insercao = @"INSERT INTO PoderDaFamilia(NivelDePoder) VALUES(@poder)";
 
     using (var conexaoBD = new SqlConnection(connectionString))
     {
-        conexaoBD.Open();
-        //sempre que não interpola $ quebra ?????????
-        string insercao = @$"INSERT INTO PoderDaFamilia(NivelDePoder) VALUES(@poder)";
-        SqlCommand comando = new SqlCommand(insercao, conexaoBD);
-        comando.Parameters.Add(new SqlParameter("@poder", poder.NivelDePoder));
+        var linhaSalvas = conexaoBD.Execute(insercao, new{poder = poder.NivelDePoder});
+        
 
-        var linhasSalvas = comando.ExecuteNonQuery();
-
-        Retorno(linhasSalvas, "criado");
+        Retorno(linhaSalvas, "criado");
     }
 }
 
+//atualizado
 static void SalvarFeudo(MeuFeudo nome)
 {
+    string insercao = @"INSERT INTO MeusFeudos(Nome) VALUES(@Nome)";
+
     using (var conexaoBD = new SqlConnection(connectionString))
     {
-        conexaoBD.Open();
-        string insercao = @"INSERT INTO MeusFeudos(Nome) VALUES(@Nome)";
-        SqlCommand comando = new SqlCommand(insercao, conexaoBD);
-        comando.Parameters.Add(new SqlParameter("@Nome", nome.Nome));
+        
+        var linhaSalvas = conexaoBD.Execute(insercao, new{Nome = nome.Nome});
 
-        var linhasSalvas = comando.ExecuteNonQuery();
-
-        Retorno(linhasSalvas, "criado");
+        Retorno(linhaSalvas, "criado");
     }
 }
 
+//atualizado
 static void SalvarFamilia(Familia nome)
 {
+    string insercao = @"INSERT INTO Familias(NomeDaFamilia) VALUES(@nome)";
+
     using (var conexaoBD = new SqlConnection(connectionString))
     {
-        conexaoBD.Open();
-        string insercao = @$"INSERT INTO Familias(NomeDaFamilia) VALUES(@nome)";
-        SqlCommand comando = new SqlCommand(insercao, conexaoBD);
-        comando.Parameters.Add(new SqlParameter("@nome", nome.NomeDaFamilia));
+        
+        var linhaSalvas = conexaoBD.Execute(insercao, new{nome = nome.NomeDaFamilia});
 
-        var linhasSalvas = comando.ExecuteNonQuery();
-
-        Retorno(linhasSalvas, "criada");
+        Retorno(linhaSalvas, "criado");
     }
 }
 
 static void SalvarMembro(Membro membro)
 {
+    string insercao = @$"INSERT INTO Membros(Nome,Familia) VALUES(@nome,@familia)";
+
+    string pesquisar = @"SELECT COUNT(*) FROM Familias WHERE ID = @familia";
+        
+
     using (var conexaoBD = new SqlConnection(connectionString))
     {
-        
-        conexaoBD.Open();
-        
-        string pesquisar = @"SELECT COUNT(*) FROM Familias WHERE ID = @familia";
-        SqlCommand comandoPesquisa = new SqlCommand(pesquisar, conexaoBD);
-        comandoPesquisa.Parameters.AddWithValue("@familia", membro.Familia);
-        
-        int qtdRegistros = (int)comandoPesquisa.ExecuteScalar();
+        int qtdRegistros = conexaoBD.ExecuteScalar<int>(pesquisar, new { familia = membro.Familia });
         if (qtdRegistros == 0)
         {
             Console.WriteLine("O ID passado não existe na tabela. Você faltou as aulas com os monges");
@@ -1171,41 +1130,28 @@ static void SalvarMembro(Membro membro)
             Console.Clear();
             MenuFeudo();
         }
-    
-        string insercao = @$"INSERT INTO Membros(Nome,Familia) VALUES(@nome,@familia)";
-        SqlCommand comando = new SqlCommand(insercao, conexaoBD);
-        comando.Parameters.Add(new SqlParameter("@nome", membro.Nome));
-        comando.Parameters.Add(new SqlParameter("@familia", membro.Familia));
 
-        var linhasSalvas = comando.ExecuteNonQuery();
+        var linhaSalvas = conexaoBD.Execute(insercao, new{nome = membro.Nome, familia = membro.Familia});
 
-        Retorno(linhasSalvas, "criada");
+        Retorno(linhaSalvas, "criado");
     }
 }
 
+//atualizado
 static void SalvarArrecadacao(Arrecadacao arrecadacao)
 {
+    string pesquisarEstacao = @"SELECT COUNT(*) FROM Estacoes WHERE ID = @estacao";
+    string pesquisarAreaDeArrecadacao = @"SELECT COUNT(*) FROM Areas WHERE ID = @AreaDeArrecadacao";
+    string pesquisarArrecadado = @"SELECT COUNT(*) FROM Produtos WHERE ID = @Arrecadado";
+
+    string insercao = @"INSERT INTO Arrecadacoes(EstacaoDoAno, AreaDeArrecadacao, Arrecadado, Quantidade) 
+                            VALUES(@estacao,@areadearrecadacao,@arrecadado,@quantidade)";
+
     using (var conexaoBD = new SqlConnection(connectionString))
     {
-        
-        conexaoBD.Open();
-        
-        string pesquisarEstacao = @"SELECT COUNT(*) FROM Estacoes WHERE ID = @estacao";
-        SqlCommand comandoPesquisaEstacao = new SqlCommand(pesquisarEstacao, conexaoBD);
-        comandoPesquisaEstacao.Parameters.AddWithValue("@estacao", arrecadacao.EstacaoDoAno);
-        
-        string pesquisarAreaDeArrecadacao = @"SELECT COUNT(*) FROM Areas WHERE ID = @AreaDeArrecadacao";
-        SqlCommand comandoPesquisaAreaDeArrecadacao = new SqlCommand(pesquisarAreaDeArrecadacao, conexaoBD);
-        comandoPesquisaAreaDeArrecadacao.Parameters.AddWithValue("@AreaDeArrecadacao", arrecadacao.AreaDeArrecadacao);
-
-        string pesquisarArrecadado = @"SELECT COUNT(*) FROM Produtos WHERE ID = @Arrecadado";
-        SqlCommand comandoPesquisaArrecadado = new SqlCommand(pesquisarArrecadado, conexaoBD);
-        comandoPesquisaArrecadado.Parameters.AddWithValue("@Arrecadado", arrecadacao.Arrecadado);
-
-
-        int qtdRegistrosEstacao = (int)comandoPesquisaEstacao.ExecuteScalar();
-        int qtdRegistrosAreaDeArrecadacao = (int)comandoPesquisaAreaDeArrecadacao.ExecuteScalar();
-        int qtdRegistrosArrecadado = (int)comandoPesquisaArrecadado.ExecuteScalar();
+        int qtdRegistrosEstacao = conexaoBD.ExecuteScalar<int>(pesquisarEstacao, new { estacao = arrecadacao.EstacaoDoAno });
+        int qtdRegistrosAreaDeArrecadacao = conexaoBD.ExecuteScalar<int>(pesquisarAreaDeArrecadacao, new { AreaDeArrecadacao = arrecadacao.AreaDeArrecadacao });
+        int qtdRegistrosArrecadado = conexaoBD.ExecuteScalar<int>(pesquisarArrecadado, new { Arrecadado = arrecadacao.Arrecadado });
 
         if (qtdRegistrosEstacao == 0 || qtdRegistrosAreaDeArrecadacao == 0 || qtdRegistrosArrecadado == 0)
         {
@@ -1216,42 +1162,29 @@ static void SalvarArrecadacao(Arrecadacao arrecadacao)
             MenuFeudo();
         }
     
-        string insercao = @$"INSERT INTO Arrecadacoes(EstacaoDoAno, AreaDeArrecadacao, Arrecadado, Quantidade) VALUES(@estacao,@areadearrecadacao,@arrecadado,@quantidade)";
-        SqlCommand comando = new SqlCommand(insercao, conexaoBD);
-        comando.Parameters.AddWithValue("@estacao", arrecadacao.EstacaoDoAno);
-        comando.Parameters.AddWithValue("@areadearrecadacao", arrecadacao.AreaDeArrecadacao);
-        comando.Parameters.AddWithValue("@arrecadado", arrecadacao.Arrecadado);
-        comando.Parameters.AddWithValue("@quantidade", arrecadacao.Quantidade);
-    
-        var linhasSalvas = comando.ExecuteNonQuery();
+        var linhaSalvas = conexaoBD.Execute(insercao, new{estacao = arrecadacao.EstacaoDoAno, areadearrecadacao = arrecadacao.AreaDeArrecadacao, arrecadado = arrecadacao.Arrecadado, quantidade = arrecadacao.Quantidade});
 
-        Retorno(linhasSalvas, "criada");
+        Retorno(linhaSalvas, "criado");
     }
 }
 
+//atualizado
 static void SalvarArea(Area area)
 {
+    string insercao = @"INSERT INTO Areas(FamiliaDaArea, NivelDaFamilia, NomeDaArea, FeudoPertencente) 
+                            VALUES(@familiaDaArea,@nivelDaFamilia,@nomeDaArea,@feudoPertencente)";
+
+    string pesquisarFamilia = @"SELECT COUNT(*) FROM Familias WHERE ID = @familia";
+    string pesquisarPoder = @"SELECT COUNT(*) FROM PoderDaFamilia WHERE ID = @poder";
+    string pesquisarFeudo = @"SELECT COUNT(*) FROM MeusFeudos WHERE ID = @feudo";
+
     using (var conexaoBD = new SqlConnection(connectionString))
     {
         
-        conexaoBD.Open();
-        
-        string pesquisarFamilia = @"SELECT COUNT(*) FROM Familias WHERE ID = @familia";
-        SqlCommand comandoPesquisaFamilia = new SqlCommand(pesquisarFamilia, conexaoBD);
-        comandoPesquisaFamilia.Parameters.AddWithValue("@familia", area.FamiliaDaArea);
-        
-        string pesquisarPoder = @"SELECT COUNT(*) FROM PoderDaFamilia WHERE ID = @poder";
-        SqlCommand comandoPesquisaPoder = new SqlCommand(pesquisarPoder, conexaoBD);
-        comandoPesquisaPoder.Parameters.AddWithValue("@poder", area.NivelDaFamilia);
 
-        string pesquisarFeudo = @"SELECT COUNT(*) FROM MeusFeudos WHERE ID = @feudo";
-        SqlCommand comandoPesquisaFeudo = new SqlCommand(pesquisarFeudo, conexaoBD);
-        comandoPesquisaFeudo.Parameters.AddWithValue("@Feudo", area.FeudoPertencente);
-
-
-        int qtdRegistrosFamilia = (int)comandoPesquisaFamilia.ExecuteScalar();
-        int qtdRegistrosPoder = (int)comandoPesquisaPoder.ExecuteScalar();
-        int qtdRegistrosFeudo = (int)comandoPesquisaFeudo.ExecuteScalar();
+        int qtdRegistrosFamilia = conexaoBD.ExecuteScalar<int>(pesquisarFamilia, new { familia = area.FamiliaDaArea });
+        int qtdRegistrosPoder = conexaoBD.ExecuteScalar<int>(pesquisarPoder, new { poder = area.NivelDaFamilia });
+        int qtdRegistrosFeudo = conexaoBD.ExecuteScalar<int>(pesquisarFeudo, new { feudo = area.FeudoPertencente });
 
         if (qtdRegistrosFamilia == 0 || qtdRegistrosPoder == 0 || qtdRegistrosFeudo == 0)
         {
@@ -1261,24 +1194,15 @@ static void SalvarArea(Area area)
             Console.Clear();
             MenuFeudo();
         }
-    
-        string insercao = @$"INSERT INTO Areas(FamiliaDaArea, NivelDaFamilia, NomeDaArea, FeudoPertencente) VALUES(@familiaDaArea,@nivelDaFamilia,@nomeDaArea,@feudoPertencente)";
-        SqlCommand comando = new SqlCommand(insercao, conexaoBD);
-        comando.Parameters.AddWithValue("@familiaDaArea", area.FamiliaDaArea);
-        comando.Parameters.AddWithValue("@nivelDaFamilia", area.NivelDaFamilia);
-        comando.Parameters.AddWithValue("@nomeDaArea", area.NomeDaArea);
-        comando.Parameters.AddWithValue("@feudoPertencente", area.FeudoPertencente);
-    
-        var linhasSalvas = comando.ExecuteNonQuery();
+        
+        var linhaSalvas = conexaoBD.Execute(insercao, new{familiaDaArea = area.FamiliaDaArea, nivelDaFamilia = area.NivelDaFamilia, nomeDaArea = area.NomeDaArea, feudoPertencente = area.FeudoPertencente});
 
-        Retorno(linhasSalvas, "criada");
+        Retorno(linhaSalvas, "criado");
     }
 }
 
 
-//dataset, a sua utilização é ampla pela possibilidade de ser preenchido com diferentes 
-//fontes, ex: um xml. O uso de DataSet's é interessante em determinados contexto, porém não o atual
-//funcionando com dataset, fica de exemplo 
+
 static void RetornarFeudos()
 {
     using (var conexaoBD = new SqlConnection(connectionString))
@@ -1287,12 +1211,11 @@ static void RetornarFeudos()
         //cria-se o comando sql
         string pesquisar = @"SELECT * FROM MeusFeudos";
         SqlCommand comando = new SqlCommand(pesquisar, conexaoBD);
-        
+    
         //puxa o conjunto de dados do banco de dados para um DataSet. O método .Fill preenche o dataset com os dados retornado pelo comando sql
         SqlDataAdapter adapter = new SqlDataAdapter(comando);
         DataSet dataSet = new DataSet();
         adapter.Fill(dataSet);
-        
         
         foreach (DataRow row in dataSet.Tables[0].Rows)
         {
@@ -1304,7 +1227,7 @@ static void RetornarFeudos()
     }
 }
 
-//funcionando com datatable, fica de exemplo
+
 static void RetornarFamilias()
 {
     using (var conexaoBD = new SqlConnection(connectionString))
@@ -1326,75 +1249,65 @@ static void RetornarFamilias()
     }
 }
 
-//refatorado, menor, mais simples e com economia de dados em memória
+//atualizado
 static void RetornarProdutos()
 {
     using (var conexaoBD = new SqlConnection(connectionString))
     {
-        conexaoBD.Open();
-        string listar = @"SELECT * FROM Produtos";
-        SqlCommand comando = new SqlCommand(listar, conexaoBD);
-        var reader = comando.ExecuteReader();
-
-        while (reader.Read())
+        var produto = conexaoBD.Query<Produto>("SELECT [ID] AS [Id], [Produto] AS [NomeDoProduto] FROM Produtos");
+    
+        foreach (var produtos in produto)
         {
-            Console.WriteLine($"Produto: {reader["Produto"]} //// Identificador (ID): {reader["ID"]}");
+            Console.WriteLine($"Nome: {produtos.NomeDoProduto} ////// Identificador:{produtos.Id}");
         }
+
     }
 }
 
-//refatorado, menor, mais simples e com economia de dados em memória
+//atualizado
 static void RetornarPoderFamilia()
 {
     using (var conexaoBD = new SqlConnection(connectionString))
     {
-        conexaoBD.Open();
-        string listar =  @"SELECT * FROM PoderDaFamilia";
-        SqlCommand comando = new SqlCommand(listar, conexaoBD);
-        var reader = comando.ExecuteReader();
-
-        while (reader.Read())
+        var poder = conexaoBD.Query<PoderDaFamilia>("SELECT [ID] AS [Id], [NivelDePoder] AS [NivelDePoder] FROM PoderDaFamilia");
+    
+        foreach (var poderDasFamilias in poder)
         {
-            Console.WriteLine($"Nivel da Família: {reader["NivelDePoder"]} //// Identificador (ID): {reader ["ID"]}");
+            Console.WriteLine($"Poder da família: {poderDasFamilias.NivelDePoder} ////// Identificador:{poderDasFamilias.Id}");
         }
     }
 }
 
-//refatorado, menor, mais simples e com economia de dados em memória
+//atualizado
 static void RetornarMembros()
 {
     using (var conexaoBD = new SqlConnection(connectionString))
     {
-        conexaoBD.Open();
-        string listar = @"SELECT * FROM Membros";;
-        SqlCommand comando = new SqlCommand(listar, conexaoBD);
-        var reader = comando.ExecuteReader();
-
-        while (reader.Read())
+        var membro = conexaoBD.Query<Membro>("SELECT [ID] AS [Id], [Nome] AS [Nome] FROM Membros");
+    
+        foreach (var membros in membro)
         {
-            Console.WriteLine($"Nome do membro: {reader["Nome"]} //// Identificador (ID): {reader ["ID"]}");
+            Console.WriteLine($"Nome: {membros.Nome} ////// Identificador:{membros.Id}");
         }
     }
 }
 
-//refatorado, menor, mais simples e com economia de dados em memória
+//atualizado
 static void RetornarAreasSeletivo()
 {
     using (var conexaoBD = new SqlConnection(connectionString))
     {
-        conexaoBD.Open();
-        string listar = @"SELECT ID, NomeDaArea FROM Areas";;
-        SqlCommand comando = new SqlCommand(listar, conexaoBD);
-        
-        var reader = comando.ExecuteReader();
-        while (reader.Read())
+        var area = conexaoBD.Query<Membro>("SELECT [ID] AS [Id], [NomeDaArea] AS [NomeDaArea] FROM Areas");
+    
+        foreach (var areas in area)
         {
-            Console.WriteLine($"Nome da área: {reader["NomeDaArea"]} //// Identificador (ID): {reader ["ID"]}");
+            Console.WriteLine($"Nome da área: {areas.Nome} ////// Identificador:{areas.Id}");
         }
+
     }
 }
 
-//refatorado, menor, mais simples e com economia de dados em memória
+
 static void RetornarAreas()
 {
     using (var conexaoBD = new SqlConnection(connectionString))
@@ -1416,7 +1329,7 @@ static void RetornarAreas()
     }
 }
 
-//refatorado, menor, mais simples e com economia de dados em memória
+
 static void RetornarEstacoes()
 {
     using (var conexaoBD = new SqlConnection(connectionString))
@@ -1433,7 +1346,7 @@ static void RetornarEstacoes()
     }
 }
 
-//refatorado, menor, mais simples e com economia de dados em memória
+
 static void RetornarArrecadacao()
 {
     
