@@ -656,7 +656,7 @@ static void ModificarProduto(int id, Produto produto)
     }
 }
 
-//atualizadoPRECISATESTAR
+//atualizado
 static void ModificarFeudo(int id, MeuFeudo nome)
 {
 
@@ -682,7 +682,7 @@ static void ModificarFeudo(int id, MeuFeudo nome)
     }
 }
 
-//atualizadoPRECISATESTAR
+//atualizado
 static void ModificarFamilia(int id, Familia nomeFamilia)
 {
     string pesquisar = @"SELECT COUNT(*) FROM Familias WHERE ID = @identificador";
@@ -705,7 +705,7 @@ static void ModificarFamilia(int id, Familia nomeFamilia)
     }
 }
 
-//atualizadoPRECISATESTAR
+//atualizado
 static void ModificarMembro(int id, Membro membro)
 {
     string pesquisar = @"SELECT COUNT(*) FROM Membros WHERE ID = @identificador";
@@ -731,7 +731,7 @@ static void ModificarMembro(int id, Membro membro)
     }
 }
 
-//atualizadoPRECISATESTAR
+//atualizado
 static void ModificarPoderFamilia(int id, PoderDaFamilia nivel)
 {
     string pesquisar = @"SELECT COUNT(*) FROM PoderDaFamilia WHERE ID = @identificador";
@@ -755,7 +755,7 @@ static void ModificarPoderFamilia(int id, PoderDaFamilia nivel)
     }
 }
 
-//AtualizadoPRECISATESTAR
+//Atualizado
 static void ModificarArrecadacao(int id, Arrecadacao arrecadacao)
 {
     string pesquisar = @$"SELECT COUNT(*) FROM Arrecadacoes WHERE ID = @identificador";
@@ -780,7 +780,7 @@ static void ModificarArrecadacao(int id, Arrecadacao arrecadacao)
     }
 }
 
-//AtualizadoPRECISATESTAR
+//Atualizado
 static void ModificarArea(int id, Area area)
 {
     string pesquisar = @$"SELECT COUNT(*) FROM Areas WHERE ID = @identificador";
@@ -796,7 +796,7 @@ static void ModificarArea(int id, Area area)
     int qtdRegistrosFamilia = conexaoBD.ExecuteScalar<int>(pesquisarFamilia, new { familia = area.FamiliaDaArea });
     int qtdRegistrosPoder = conexaoBD.ExecuteScalar<int>(pesquisarPoder, new { poder = area.NivelDaFamilia });
     int qtdRegistrosFeudo = conexaoBD.ExecuteScalar<int>(pesquisarFeudo, new { feudo = area.FeudoPertencente });
-    
+     
     if (qtdRegistros == 0 || qtdRegistrosFamilia == 0 || qtdRegistrosPoder == 0 || qtdRegistrosFeudo == 0)
     {
         Console.WriteLine("O ID passado não existe na tabela. Você faltou as aulas com os monges");
@@ -897,89 +897,148 @@ static Area ModificarAreaModelo()
 }
 
 
-
+//verificar se funciona
 static void DeletarMembro(int id)
 {
-    
+    string excluir = @"DELETE FROM Membros WHERE ID = @id";
+
     using (var conexaoBD = new SqlConnection(connectionString))
     {
-    conexaoBD.Open();
-    string excluir = @$"DELETE FROM Membros WHERE ID = {id}";
-    SqlCommand comando = new SqlCommand(excluir, conexaoBD);
+        
+        var linhaSalvas = conexaoBD.Execute(excluir, new{id = id});
 
-    int linhaExcluida = comando.ExecuteNonQuery();
-
-    Retorno(linhaExcluida, "deletada");
+        Retorno(linhaSalvas, "criado");
     }
+    
+    // using (var conexaoBD = new SqlConnection(connectionString))
+    // {
+    // conexaoBD.Open();
+    // string excluir = @$"DELETE FROM Membros WHERE ID = {id}";
+    // SqlCommand comando = new SqlCommand(excluir, conexaoBD);
+
+    // int linhaExcluida = comando.ExecuteNonQuery();
+
+    // Retorno(linhaExcluida, "deletada");
+    // }
 }
 
+//verificar se funciona
 static void DeletarArrecadacao(int id)
 {
-    
+    string excluir = @"DELETE FROM Arrecadacoes WHERE ID = @id";
+
     using (var conexaoBD = new SqlConnection(connectionString))
     {
-    conexaoBD.Open();
-    string excluir = @$"DELETE FROM Arrecadacoes WHERE ID = {id}";
-    SqlCommand comando = new SqlCommand(excluir, conexaoBD);
+        
+        var linhaSalvas = conexaoBD.Execute(excluir, new{id = id});
 
-    int linhaExcluida = comando.ExecuteNonQuery();
-
-    Retorno(linhaExcluida, "deletada");
+        Retorno(linhaSalvas, "criado");
     }
+
+    // using (var conexaoBD = new SqlConnection(connectionString))
+    // {
+    // conexaoBD.Open();
+    // string excluir = @$"DELETE FROM Arrecadacoes WHERE ID = {id}";
+    // SqlCommand comando = new SqlCommand(excluir, conexaoBD);
+
+    // int linhaExcluida = comando.ExecuteNonQuery();
+
+    // Retorno(linhaExcluida, "deletada");
+    // }
 }
 
+//verificar se funciona
 static void DeletarArea(int id)
 {
-    using (var conexaoBD = new SqlConnection(connectionString))
-    {
-    conexaoBD.Open();
-
-        string excluir = @$"DELETE Arrecadacoes
+    string excluir = @"DELETE Arrecadacoes
                             FROM Arrecadacoes
                             JOIN Areas ON Arrecadacoes.AreaDeArrecadacao = Areas.ID
-                            WHERE Arrecadacoes.AreaDeArrecadacao = {id}
+                            WHERE Arrecadacoes.AreaDeArrecadacao = @id
         
-                            DELETE Areas FROM Areas WHERE Areas.ID = {id}";
-        SqlCommand comando = new SqlCommand(excluir, conexaoBD);
-        
+                            DELETE Areas FROM Areas WHERE Areas.ID = @identificador";
 
-        int linhaExcluida = comando.ExecuteNonQuery();
-
-        Retorno(linhaExcluida, "Modificadas");
-    }
-}
-
-
-static void ExtinguirFamilia(int id)
-{
     using (var conexaoBD = new SqlConnection(connectionString))
     {
-    conexaoBD.Open();
+        
+        var linhaSalvas = conexaoBD.Execute(excluir, new{id = id, identificador = id});
 
-        string excluir = @$"DELETE Areas
+        Retorno(linhaSalvas, "criado");
+    }
+    
+    // using (var conexaoBD = new SqlConnection(connectionString))
+    // {
+    // conexaoBD.Open();
+
+    //     string excluir = @$"DELETE Arrecadacoes
+    //                         FROM Arrecadacoes
+    //                         JOIN Areas ON Arrecadacoes.AreaDeArrecadacao = Areas.ID
+    //                         WHERE Arrecadacoes.AreaDeArrecadacao = {id}
+        
+    //                         DELETE Areas FROM Areas WHERE Areas.ID = {id}";
+    //     SqlCommand comando = new SqlCommand(excluir, conexaoBD);
+        
+
+    //     int linhaExcluida = comando.ExecuteNonQuery();
+
+    //     Retorno(linhaExcluida, "Modificadas");
+    // }
+}
+
+//verificar se funciona
+static void ExtinguirFamilia(int id)
+{
+    string excluir = @"DELETE Areas
                             FROM Areas
                             JOIN Familias ON Areas.FamiliaDaArea = Familias.ID 
                             JOIN Membros ON Familias.ID = Membros.Familia 
-                            WHERE Areas.FamiliaDaArea = {id};
+                            WHERE Areas.FamiliaDaArea = @id;
 
                             DELETE Membros
                             FROM Membros
                             JOIN Familias ON Familias.ID = Membros.Familia 
-                            WHERE Membros.Familia = {id};
+                            WHERE Membros.Familia = @identificar;
 
                             DELETE Familias
                             FROM Familias
-                            WHERE Familias.ID = {id};
+                            WHERE Familias.ID = @identificador;
                             ";
-        SqlCommand comando = new SqlCommand(excluir, conexaoBD);
-        
 
-        int linhaExcluida = comando.ExecuteNonQuery();
+    using (var conexaoBD = new SqlConnection(connectionString))
+    {
+        
+        var linhaSalvas = conexaoBD.Execute(excluir, new{id = id, identificar = id, identificador = id});
 
-        Retorno(linhaExcluida, "Modificadas");
-        
-        
+        Retorno(linhaSalvas, "criado");
     }
+
+    // using (var conexaoBD = new SqlConnection(connectionString))
+    // {
+    // conexaoBD.Open();
+
+    //     string excluir = @$"DELETE Areas
+    //                         FROM Areas
+    //                         JOIN Familias ON Areas.FamiliaDaArea = Familias.ID 
+    //                         JOIN Membros ON Familias.ID = Membros.Familia 
+    //                         WHERE Areas.FamiliaDaArea = {id};
+
+    //                         DELETE Membros
+    //                         FROM Membros
+    //                         JOIN Familias ON Familias.ID = Membros.Familia 
+    //                         WHERE Membros.Familia = {id};
+
+    //                         DELETE Familias
+    //                         FROM Familias
+    //                         WHERE Familias.ID = {id};
+    //                         ";
+    //     SqlCommand comando = new SqlCommand(excluir, conexaoBD);
+        
+
+    //     int linhaExcluida = comando.ExecuteNonQuery();
+
+    //     Retorno(linhaExcluida, "Modificadas");
+        
+        
+    // }
 }
 
 
