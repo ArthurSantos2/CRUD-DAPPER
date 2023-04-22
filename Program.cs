@@ -907,19 +907,9 @@ static void DeletarMembro(int id)
         
         var linhaSalvas = conexaoBD.Execute(excluir, new{id = id});
 
-        Retorno(linhaSalvas, "criado");
+        Retorno(linhaSalvas, "deletada");
     }
     
-    // using (var conexaoBD = new SqlConnection(connectionString))
-    // {
-    // conexaoBD.Open();
-    // string excluir = @$"DELETE FROM Membros WHERE ID = {id}";
-    // SqlCommand comando = new SqlCommand(excluir, conexaoBD);
-
-    // int linhaExcluida = comando.ExecuteNonQuery();
-
-    // Retorno(linhaExcluida, "deletada");
-    // }
 }
 
 //verificar se funciona
@@ -932,19 +922,8 @@ static void DeletarArrecadacao(int id)
         
         var linhaSalvas = conexaoBD.Execute(excluir, new{id = id});
 
-        Retorno(linhaSalvas, "criado");
+        Retorno(linhaSalvas, "deletada");
     }
-
-    // using (var conexaoBD = new SqlConnection(connectionString))
-    // {
-    // conexaoBD.Open();
-    // string excluir = @$"DELETE FROM Arrecadacoes WHERE ID = {id}";
-    // SqlCommand comando = new SqlCommand(excluir, conexaoBD);
-
-    // int linhaExcluida = comando.ExecuteNonQuery();
-
-    // Retorno(linhaExcluida, "deletada");
-    // }
 }
 
 //verificar se funciona
@@ -962,7 +941,7 @@ static void DeletarArea(int id)
         
         var linhaSalvas = conexaoBD.Execute(excluir, new{id = id, identificador = id});
 
-        Retorno(linhaSalvas, "criado");
+        Retorno(linhaSalvas, "deletada);
     }
     
     // using (var conexaoBD = new SqlConnection(connectionString))
@@ -1008,37 +987,8 @@ static void ExtinguirFamilia(int id)
         
         var linhaSalvas = conexaoBD.Execute(excluir, new{id = id, identificar = id, identificador = id});
 
-        Retorno(linhaSalvas, "criado");
+        Retorno(linhaSalvas, "deletada");
     }
-
-    // using (var conexaoBD = new SqlConnection(connectionString))
-    // {
-    // conexaoBD.Open();
-
-    //     string excluir = @$"DELETE Areas
-    //                         FROM Areas
-    //                         JOIN Familias ON Areas.FamiliaDaArea = Familias.ID 
-    //                         JOIN Membros ON Familias.ID = Membros.Familia 
-    //                         WHERE Areas.FamiliaDaArea = {id};
-
-    //                         DELETE Membros
-    //                         FROM Membros
-    //                         JOIN Familias ON Familias.ID = Membros.Familia 
-    //                         WHERE Membros.Familia = {id};
-
-    //                         DELETE Familias
-    //                         FROM Familias
-    //                         WHERE Familias.ID = {id};
-    //                         ";
-    //     SqlCommand comando = new SqlCommand(excluir, conexaoBD);
-        
-
-    //     int linhaExcluida = comando.ExecuteNonQuery();
-
-    //     Retorno(linhaExcluida, "Modificadas");
-        
-        
-    // }
 }
 
 
