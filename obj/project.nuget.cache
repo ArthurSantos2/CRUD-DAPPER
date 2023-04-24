@@ -1,12 +1,13 @@
 {
   "version": 2,
-  "dgSpecHash": "VnPPEHXRc5wh09Jf96l3+O/Ad5RRv7Ox3he1qZRqXRZM1DMVDx0DSYF9S4prRHaZ/sgYldhrM3FHMB/TFqNE/g==",
+  "dgSpecHash": "Z8l2NDYHkFRJ8rSM4nPvhyL84f9TmYNMp5MfXL90jVSYMXPi5o5YoOINDOJ9hU6EGsY/KbwlHgyAitE9Aoo4jg==",
   "success": true,
   "projectFilePath": "C:\\ProjetosGITHUB\\CRUD_Basico_Dapper\\CRUD_Basico_Dapper.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\gaqtt\\.nuget\\packages\\azure.core\\1.25.0\\azure.core.1.25.0.nupkg.sha512",
     "C:\\Users\\gaqtt\\.nuget\\packages\\azure.identity\\1.7.0\\azure.identity.1.7.0.nupkg.sha512",
     "C:\\Users\\gaqtt\\.nuget\\packages\\dapper\\2.0.123\\dapper.2.0.123.nupkg.sha512",
+    "C:\\Users\\gaqtt\\.nuget\\packages\\dapper.contrib\\2.0.78\\dapper.contrib.2.0.78.nupkg.sha512",
     "C:\\Users\\gaqtt\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\1.1.1\\microsoft.bcl.asyncinterfaces.1.1.1.nupkg.sha512",
     "C:\\Users\\gaqtt\\.nuget\\packages\\microsoft.csharp\\4.5.0\\microsoft.csharp.4.5.0.nupkg.sha512",
     "C:\\Users\\gaqtt\\.nuget\\packages\\microsoft.data.sqlclient\\5.1.1\\microsoft.data.sqlclient.5.1.1.nupkg.sha512",

@@ -1,11 +1,11 @@
 ﻿using System.Data;
 using Dapper;
+using Dapper.Contrib.Extensions;
 using Microsoft.Data.SqlClient;
 
 const string connectionString = "Server=DESKTOP-7V86B4M;Database=MeuFeudo;Integrated Security=True;TrustServerCertificate=True";
 
-
-Menu();
+RetornarFeudos();
 
 //esses não precisam mudar
 static void Menu()
@@ -544,8 +544,8 @@ static void CriarFeudo()
 {
     var feudo = new MeuFeudo();
 
-    Console.WriteLine("Área de criação de produtos");
-    Console.WriteLine("Digite o nome do produto abaixo:");
+    Console.WriteLine("Área de criação de feudos");
+    Console.WriteLine("Digite o nome do feudo abaixo:");
     feudo.Nome = Console.ReadLine();
 
     SalvarFeudo(feudo);
@@ -656,15 +656,15 @@ static void ModificarProduto(int id, Produto produto)
     }
 }
 
-//atualizado
+//atualizado para dapper.contrib
 static void ModificarFeudo(int id, MeuFeudo nome)
 {
-
+    nome.Id = id;
     string pesquisar = @"SELECT COUNT(*) FROM MeusFeudos WHERE ID = @identificador";
-    string modificar = @"UPDATE MeusFeudos SET Nome = @Nome WHERE ID = @id";
-
+    
     using (var conexaoBD = new SqlConnection(connectionString))
     {
+    
     int qtdRegistros = conexaoBD.ExecuteScalar<int>(pesquisar, new { identificador = id });
     if (qtdRegistros == 0)
     {
@@ -674,10 +674,9 @@ static void ModificarFeudo(int id, MeuFeudo nome)
         Console.Clear();
         MenuFeudo();
     } 
+    var linhaSalvas = conexaoBD.Update<MeuFeudo>(nome);
 
-    var linhaSalvas = conexaoBD.Execute(modificar, new{nome = nome.Nome, id = id});
-
-    Retorno(linhaSalvas, "modificado");
+    Retorno(Convert.ToInt32(linhaSalvas), "modificado");
 
     }
 }
@@ -779,7 +778,7 @@ static void ModificarArrecadacao(int id, Arrecadacao arrecadacao)
     Retorno(linhaSalvas, "modificado");
     }
 }
-
+ 
 //Atualizado
 static void ModificarArea(int id, Area area)
 {
@@ -897,7 +896,7 @@ static Area ModificarAreaModelo()
 }
 
 
-//verificar se funciona
+//atualizado
 static void DeletarMembro(int id)
 {
     string excluir = @"DELETE FROM Membros WHERE ID = @id";
@@ -912,7 +911,7 @@ static void DeletarMembro(int id)
     
 }
 
-//verificar se funciona
+//atualizado
 static void DeletarArrecadacao(int id)
 {
     string excluir = @"DELETE FROM Arrecadacoes WHERE ID = @id";
@@ -926,7 +925,7 @@ static void DeletarArrecadacao(int id)
     }
 }
 
-//verificar se funciona
+//atualizado
 static void DeletarArea(int id)
 {
     string excluir = @"DELETE Arrecadacoes
@@ -941,29 +940,13 @@ static void DeletarArea(int id)
         
         var linhaSalvas = conexaoBD.Execute(excluir, new{id = id, identificador = id});
 
-        Retorno(linhaSalvas, "deletada);
+        Retorno(linhaSalvas, "deletada");
+        
     }
     
-    // using (var conexaoBD = new SqlConnection(connectionString))
-    // {
-    // conexaoBD.Open();
-
-    //     string excluir = @$"DELETE Arrecadacoes
-    //                         FROM Arrecadacoes
-    //                         JOIN Areas ON Arrecadacoes.AreaDeArrecadacao = Areas.ID
-    //                         WHERE Arrecadacoes.AreaDeArrecadacao = {id}
-        
-    //                         DELETE Areas FROM Areas WHERE Areas.ID = {id}";
-    //     SqlCommand comando = new SqlCommand(excluir, conexaoBD);
-        
-
-    //     int linhaExcluida = comando.ExecuteNonQuery();
-
-    //     Retorno(linhaExcluida, "Modificadas");
-    // }
 }
 
-//verificar se funciona
+//atualizado
 static void ExtinguirFamilia(int id)
 {
     string excluir = @"DELETE Areas
@@ -1021,18 +1004,18 @@ static void SalvarPoder(PoderDaFamilia poder)
     }
 }
 
-//atualizado
+//atualizado com dapper.contrib
 static void SalvarFeudo(MeuFeudo nome)
 {
-    string insercao = @"INSERT INTO MeusFeudos(Nome) VALUES(@Nome)";
-
     using (var conexaoBD = new SqlConnection(connectionString))
     {
         
-        var linhaSalvas = conexaoBD.Execute(insercao, new{Nome = nome.Nome});
+        var linhaSalvas = conexaoBD.Insert<MeuFeudo>(nome);
 
-        Retorno(linhaSalvas, "criado");
+        //aqui está retornando o id da linha criada
+        Retorno(Convert.ToInt32(linhaSalvas), "criado");
     }
+
 }
 
 //atualizado
@@ -1140,21 +1123,21 @@ static void SalvarArea(Area area)
 }
 
 
-//atualizado
+//utilizando dapper.contrib. Facilita não escrever a instrução
 static void RetornarFeudos()
 {
-    using (var conexaoBD = new SqlConnection(connectionString))
+    using(var conexaoBD = new SqlConnection(connectionString))
     {
-        var feudo = conexaoBD.Query<MeuFeudo>("SELECT Nome [Nome], ID [Id] FROM MeusFeudos");
-    
-        foreach (var feudos in feudo)
+        var feudos = conexaoBD.GetAll<MeuFeudo>();
+
+        foreach(var feudo in feudos)
         {
-            Console.WriteLine($"Feudo: {feudos.Nome} ////// Identificador (ID):{feudos.Id}");
+            Console.WriteLine($"Feudo: {feudo.Nome} ////// Identificador (ID):{feudo.Id}");
         }
     }
 }
 
-//atualizado+
+//atualizado
 static void RetornarFamilias()
 {
     using (var conexaoBD = new SqlConnection(connectionString))
@@ -1233,30 +1216,16 @@ static void RetornarAreas()
     using (var conexaoBD = new SqlConnection(connectionString))
     {
         var areas = conexaoBD.Query<ClasseGenerica<string>>(@"select Areas.ID AS [Id], Familias.NomeDaFamilia AS [AtributoGenerico1], PoderDaFamilia.NivelDePoder [AtributoGenerico2], Areas.NomeDaArea [AtributoGenerico3], MeusFeudos.Nome [AtributoGenerico4]
-                        from Areas 
-                        JOIN MeusFeudos on MeusFeudos.ID = Areas.FeudoPertencente
-                        JOIN Familias on Familias.ID = Areas.FamiliaDaArea
-                        JOIN PoderDaFamilia on PoderDaFamilia.ID = Areas.NivelDaFamilia");
+                                                            from Areas 
+                                                            JOIN MeusFeudos on MeusFeudos.ID = Areas.FeudoPertencente
+                                                            JOIN Familias on Familias.ID = Areas.FamiliaDaArea
+                                                            JOIN PoderDaFamilia on PoderDaFamilia.ID = Areas.NivelDaFamilia");
 
         foreach (var area in areas)
         {
             Console.WriteLine($@"-----Identificador (ID): {area.Id} / Familia da área: {area.AtributoGenerico1} /  Poder da família: {area.AtributoGenerico2} Nome da área: {area.AtributoGenerico3} / Pertence ao feudo: {area.AtributoGenerico4}");
         }
     }
-    //utilizar DYNAMIC funciona, porém como é em tempo de execução e há outro modo de resolver, cabe não utilizar
-    // using (var conexaoBD = new SqlConnection(connectionString))
-    // {
-    //     var areas = conexaoBD.Query<dynamic>(@"select Areas.ID, Familias.NomeDaFamilia, PoderDaFamilia.NivelDePoder, Areas.NomeDaArea, MeusFeudos.Nome
-    //                     from Areas 
-    //                     JOIN MeusFeudos on MeusFeudos.ID = Areas.FeudoPertencente
-    //                     JOIN Familias on Familias.ID = Areas.FamiliaDaArea
-    //                     JOIN PoderDaFamilia on PoderDaFamilia.ID = Areas.NivelDaFamilia");
-
-    //     foreach (var area in areas)
-    //     {
-    //         Console.WriteLine($@"-----Identificador (ID): {area.ID} / Familia da área: {area.NomeDaFamilia} /  Poder da família: {area.NivelDePoder} Nome da área: {area.NomeDaArea} / Pertence ao feudo: {area.Nome}");
-    //     }
-    // }
 }
 
 //atualizado

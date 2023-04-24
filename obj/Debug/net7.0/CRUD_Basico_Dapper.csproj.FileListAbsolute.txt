@@ -49,3 +49,4 @@ C:\ProjetosGITHUB\CRUD_Basico_Dapper\obj\Debug\net7.0\refint\CRUD_Basico_Dapper.
 C:\ProjetosGITHUB\CRUD_Basico_Dapper\obj\Debug\net7.0\CRUD_Basico_Dapper.pdb
 C:\ProjetosGITHUB\CRUD_Basico_Dapper\obj\Debug\net7.0\CRUD_Basico_Dapper.genruntimeconfig.cache
 C:\ProjetosGITHUB\CRUD_Basico_Dapper\obj\Debug\net7.0\ref\CRUD_Basico_Dapper.dll
+C:\ProjetosGITHUB\CRUD_Basico_Dapper\bin\Debug\net7.0\Dapper.Contrib.dll
