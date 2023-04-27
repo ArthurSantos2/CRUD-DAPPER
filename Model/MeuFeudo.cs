@@ -1,8 +1,8 @@
 using Dapper.Contrib.Extensions;
 
 [Table("[MeusFeudos]")]
-public class MeuFeudo
+public class MeuFeudo : BaseClass
 {
-    public int Id{get;set;}
+    // public int Id{get;set;}
     public string Nome{get;set;}
 }

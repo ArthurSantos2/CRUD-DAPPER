@@ -1,6 +1,6 @@
-public class Area
+public class Area : BaseClass
 {
-    public int Id{get;set;}
+    // public int Id{get;set;}
     public int FamiliaDaArea{get;set;}
     public int NivelDaFamilia{get;set;}
     public string NomeDaArea{get;set;}

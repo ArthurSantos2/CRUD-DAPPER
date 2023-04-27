@@ -3,10 +3,11 @@ using Dapper;
 using Dapper.Contrib.Extensions;
 using Microsoft.Data.SqlClient;
 
+
 const string connectionString = "Server=DESKTOP-7V86B4M;Database=MeuFeudo;Integrated Security=True;TrustServerCertificate=True";
 
-RetornarFeudos();
-
+// CriarProduto();
+RetornarProdutos();
 //esses não precisam mudar
 static void Menu()
 {
@@ -488,8 +489,8 @@ static void MenuArea()
         RetornarAreas();
         Console.WriteLine("Pode digitar:");
         id = int.Parse(Console.ReadLine());
-        var areaModificada = ModificarAreaModelo();
-        ModificarArea(id,areaModificada);
+        var areaModificada = ModificarAreaModelo(id);
+        ModificarArea(areaModificada);
         break;
         case "EXCLUIR":
         Console.WriteLine("Escolha a arrecadacao a ser deletada e digite o ID que identifica ela");
@@ -518,13 +519,13 @@ static void MenuArea()
 //esses não necessitam mudar
 static void CriarProduto()
 {
-    var produto = new Produto();
+    var produtos = new Produtos();
 
     Console.WriteLine("Área de criação de produtos");
     Console.WriteLine("Digite o nome do produto abaixo:");
-    produto.NomeDoProduto = Console.ReadLine();
+    produtos.Produto = Console.ReadLine();
 
-    SalvarProduto(produto);
+    SalvarProduto(produtos);
   
 }
 
@@ -631,7 +632,7 @@ static void CriarArea()
 
 
 //atualizado
-static void ModificarProduto(int id, Produto produto)
+static void ModificarProduto(int id, Produtos produto)
 {
     
     string pesquisar = @"SELECT COUNT(*) FROM Produtos WHERE ID = @identificador";
@@ -649,7 +650,7 @@ static void ModificarProduto(int id, Produto produto)
         MenuProduto();
     } 
 
-    var linhaSalvas = conexaoBD.Execute(modificar, new{produto = produto.NomeDoProduto, id = id});
+    var linhaSalvas = conexaoBD.Execute(modificar, new{produto = produto.Produto, id = id});
 
     Retorno(linhaSalvas, "modificado");
 
@@ -780,35 +781,10 @@ static void ModificarArrecadacao(int id, Arrecadacao arrecadacao)
 }
  
 //Atualizado
-static void ModificarArea(int id, Area area)
+static void ModificarArea(Area area)
 {
-    string pesquisar = @$"SELECT COUNT(*) FROM Areas WHERE ID = @identificador";
-    string pesquisarFamilia = @"SELECT COUNT(*) FROM Familias WHERE ID = @familia";
-    string pesquisarPoder = @"SELECT COUNT(*) FROM PoderDaFamilia WHERE ID = @poder";
-    string pesquisarFeudo = @"SELECT COUNT(*) FROM MeusFeudos WHERE ID = @feudo";
-    string modificar = @"UPDATE Areas SET FamiliaDaArea = @familiaDaArea, NivelDaFamilia = @nivelDaFamilia, NomeDaArea = @nomeDaArea, FeudoPertencente = @feudoPertencente WHERE ID = @id";
-
-    using (var conexaoBD = new SqlConnection(connectionString))
-    {
-    
-    int qtdRegistros = conexaoBD.ExecuteScalar<int>(pesquisar, new { identificador = id});
-    int qtdRegistrosFamilia = conexaoBD.ExecuteScalar<int>(pesquisarFamilia, new { familia = area.FamiliaDaArea });
-    int qtdRegistrosPoder = conexaoBD.ExecuteScalar<int>(pesquisarPoder, new { poder = area.NivelDaFamilia });
-    int qtdRegistrosFeudo = conexaoBD.ExecuteScalar<int>(pesquisarFeudo, new { feudo = area.FeudoPertencente });
-     
-    if (qtdRegistros == 0 || qtdRegistrosFamilia == 0 || qtdRegistrosPoder == 0 || qtdRegistrosFeudo == 0)
-    {
-        Console.WriteLine("O ID passado não existe na tabela. Você faltou as aulas com os monges");
-        Console.WriteLine("Redirecionando para o menu atual...");
-        Thread.Sleep(3000);
-        //Console.Clear();
-        MenuArea();
-    } 
-
-    var linhaSalvas = conexaoBD.Execute(modificar, new{familiaDaArea = area.FamiliaDaArea, nivelDaFamilia = area.NivelDaFamilia, nomeDaArea = area.NomeDaArea, feudoPertencente = area.FeudoPertencente, id = id});
-
-    Retorno(linhaSalvas, "modificado");
-    }
+    var repository = new AreaRepository();
+    repository.Atualizar(area);
 }
 
 
@@ -859,13 +835,13 @@ static PoderDaFamilia ModificarPoderFamiliaModelo()
     return poder;
 }
 
-static Produto ModificarProdutoModelo()
+static Produtos ModificarProdutoModelo()
 {
-    var produto = new Produto();
+    var produtos = new Produtos();
     Console.WriteLine("Olá, Senhor Feudal. Iremos modificar o produto agora");
     Console.WriteLine("Por gentileza, escreva novo nome para o produto");
-    produto.NomeDoProduto = Console.ReadLine();
-    return produto;
+    produtos.Produto = Console.ReadLine();
+    return produtos;
 }
 
 static MeuFeudo ModificarFeudoModelo()
@@ -877,9 +853,11 @@ static MeuFeudo ModificarFeudoModelo()
     return feudo;
 }
 
-static Area ModificarAreaModelo()
+//com repository
+static Area ModificarAreaModelo(int id)
 {
     var area = new Area();
+    area.Id = id;
     Console.WriteLine("Olá, Senhor Feudal. Iremos modificar uma area agora");
     Console.WriteLine("Por gentileza, veja as familias e digite o id da escolhida");
     RetornarFamilias();
@@ -975,19 +953,11 @@ static void ExtinguirFamilia(int id)
 }
 
 
-//atualizado
-static void SalvarProduto(Produto produto)
+//com repository. não está salvando
+static void SalvarProduto(Produtos produto)
 {
-
-   var insercao = @"INSERT INTO Produtos(Produto) VALUES(@NomeDoProduto)";
-
-    using (var conexaoBD = new SqlConnection(connectionString))
-    {
-        
-        var linhaSalvas = conexaoBD.Execute(insercao, new{NomeDoProduto = produto.NomeDoProduto});
-
-        Retorno(linhaSalvas, "criado");
-    }
+   var repository = new ProdutoRepository();
+   repository.Criar(produto);
 }
 
 //atualizado
@@ -1089,39 +1059,12 @@ static void SalvarArrecadacao(Arrecadacao arrecadacao)
     }
 }
 
-//atualizado
+//com repository
 static void SalvarArea(Area area)
 {
-    string insercao = @"INSERT INTO Areas(FamiliaDaArea, NivelDaFamilia, NomeDaArea, FeudoPertencente) 
-                            VALUES(@familiaDaArea,@nivelDaFamilia,@nomeDaArea,@feudoPertencente)";
-
-    string pesquisarFamilia = @"SELECT COUNT(*) FROM Familias WHERE ID = @familia";
-    string pesquisarPoder = @"SELECT COUNT(*) FROM PoderDaFamilia WHERE ID = @poder";
-    string pesquisarFeudo = @"SELECT COUNT(*) FROM MeusFeudos WHERE ID = @feudo";
-
-    using (var conexaoBD = new SqlConnection(connectionString))
-    {
-        
-
-        int qtdRegistrosFamilia = conexaoBD.ExecuteScalar<int>(pesquisarFamilia, new { familia = area.FamiliaDaArea });
-        int qtdRegistrosPoder = conexaoBD.ExecuteScalar<int>(pesquisarPoder, new { poder = area.NivelDaFamilia });
-        int qtdRegistrosFeudo = conexaoBD.ExecuteScalar<int>(pesquisarFeudo, new { feudo = area.FeudoPertencente });
-
-        if (qtdRegistrosFamilia == 0 || qtdRegistrosPoder == 0 || qtdRegistrosFeudo == 0)
-        {
-            Console.WriteLine("O ID passado não existe na tabela. Você faltou as aulas com os monges");
-            Console.WriteLine("Redirecionando para o menu atual...");
-            Thread.Sleep(3000);
-            Console.Clear();
-            MenuFeudo();
-        }
-        
-        var linhaSalvas = conexaoBD.Execute(insercao, new{familiaDaArea = area.FamiliaDaArea, nivelDaFamilia = area.NivelDaFamilia, nomeDaArea = area.NomeDaArea, feudoPertencente = area.FeudoPertencente});
-
-        Retorno(linhaSalvas, "criado");
-    }
+    var repository = new AreaRepository();
+    repository.Criar(area);
 }
-
 
 //utilizando dapper.contrib. Facilita não escrever a instrução
 static void RetornarFeudos()
@@ -1151,19 +1094,16 @@ static void RetornarFamilias()
     }
 }
 
-//atualizado
+//atualizado no repository
 static void RetornarProdutos()
 {
-    using (var conexaoBD = new SqlConnection(connectionString))
-    {
-        var produto = conexaoBD.Query<Produto>("SELECT [ID] AS [Id], [Produto] AS [NomeDoProduto] FROM Produtos");
-    
-        foreach (var produtos in produto)
-        {
-            Console.WriteLine($"Nome: {produtos.NomeDoProduto} ////// Identificador:{produtos.Id}");
-        }
+    var repository = new ProdutoRepository();
+    var produtos = repository.TrazerTodos();
+    foreach (var produto in produtos)
+            Console.WriteLine($"Nome: {produto.Produto} ////// Identificador:{produto.Id}");
+        
 
-    }
+    
 }
 
 //atualizado
@@ -1209,23 +1149,13 @@ static void RetornarAreasSeletivo()
     }
 }
 
-//atualizado
+//atualizado com repository
 static void RetornarAreas()
 {
-    //Aqui, para não utilizar o DYNAMIC, fiz uma classe generica com atributos genericos para passar os dados e ter segurança de tipo e resolver os diferentes métodos
-    using (var conexaoBD = new SqlConnection(connectionString))
-    {
-        var areas = conexaoBD.Query<ClasseGenerica<string>>(@"select Areas.ID AS [Id], Familias.NomeDaFamilia AS [AtributoGenerico1], PoderDaFamilia.NivelDePoder [AtributoGenerico2], Areas.NomeDaArea [AtributoGenerico3], MeusFeudos.Nome [AtributoGenerico4]
-                                                            from Areas 
-                                                            JOIN MeusFeudos on MeusFeudos.ID = Areas.FeudoPertencente
-                                                            JOIN Familias on Familias.ID = Areas.FamiliaDaArea
-                                                            JOIN PoderDaFamilia on PoderDaFamilia.ID = Areas.NivelDaFamilia");
-
-        foreach (var area in areas)
-        {
-            Console.WriteLine($@"-----Identificador (ID): {area.Id} / Familia da área: {area.AtributoGenerico1} /  Poder da família: {area.AtributoGenerico2} Nome da área: {area.AtributoGenerico3} / Pertence ao feudo: {area.AtributoGenerico4}");
-        }
-    }
+    var repository = new AreaRepository();
+    var areas = repository.TrazerTodos();
+    foreach (var area in areas)
+        Console.WriteLine($@"-----Identificador (ID): {area.Id} / Familia da área: {area.FamiliaDaArea} /  Poder da família: {area.NivelDaFamilia} Nome da área: {area.NomeDaArea} / Pertence ao feudo: {area.FeudoPertencente}");
 }
 
 //atualizado
