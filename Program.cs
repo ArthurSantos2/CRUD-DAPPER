@@ -9,7 +9,7 @@ const string connectionString = "Server=DESKTOP-7V86B4M;Database=MeuFeudo;Integr
 
 Menu();
 // RetornarProdutos();
-//esses não precisam mudar a maioria, mudanças ocorreram na lógica dos que podem modificar e excluir
+
 static void Menu()
 {
     Console.WriteLine("Bom dia, Senhor Feudal. O que gostaria de fazer?");
@@ -87,7 +87,7 @@ static void Menu()
         
     }
 }
-//atualizadoooooooooooooooooo
+
 static void MenuFeudo()
 {
     Console.WriteLine("Bom dia, Senhor Feudal. O que gostaria de fazer com as informações dos seus feudos?");
@@ -140,7 +140,7 @@ static void MenuFeudo()
         
     }
 }
-//atualizadoooooooooooooo
+
 static void MenuProduto()
 {
     Console.WriteLine("Bom dia, Senhor Feudal. O que gostaria de fazer com os produtos?");
@@ -190,7 +190,7 @@ static void MenuProduto()
         
     }
 }
-//atualizadoooooooooooooooooooo
+
 static void MenuMembro()
 {
     Console.WriteLine("Bom dia, Senhor Feudal. O que gostaria de fazer com os membros?");
@@ -295,7 +295,7 @@ static void MenuExtinguir()
         
     }
 }
-//atualizadoooooooooooooooooooo
+
 static void MenuFamilia()
 {
     Console.WriteLine("Bom dia, Senhor Feudal. O que gostaria de fazer com as informações das famílias?");
@@ -347,7 +347,7 @@ static void MenuFamilia()
         
     }
 }
-//atualizadoooooooooooooooooo
+
 static void MenuPoderFamilia()
 {
     Console.WriteLine("Bom dia, Senhor Feudal. O que gostaria de fazer com as informações dos níveis de poder das famílias?");
@@ -399,7 +399,7 @@ static void MenuPoderFamilia()
         
     }
 }
-//atualizadoooo
+
 static void MenuArrecadacao()
 {
     Console.WriteLine("Bom dia, Senhor Feudal. O que gostaria de fazer com as arrecadações?");
@@ -516,8 +516,6 @@ static void MenuArea()
     }
 }
 
-
-//esses não necessitam mudar
 static void CriarProduto()
 {
     var produtos = new Produtos();
@@ -630,59 +628,48 @@ static void CriarArea()
     SalvarArea(area);
 }
 
-
-//generico
 static void ModificarProduto(Produtos produto)
 {
     var repository = new RepositoryBase<Produtos>();
     repository.Atualizar(produto);
 }
 
-//generico
 static void ModificarFeudo(MeuFeudo nome)
 {
     var repository = new RepositoryBase<MeuFeudo>();
     repository.Atualizar(nome);
 }
 
-//generico
 static void ModificarFamilia(Familia nomeFamilia)
 {
     var repository = new RepositoryBase<Familia>();
     repository.Atualizar(nomeFamilia);
 }
 
-//generico
 static void ModificarMembro(Membro membro)
 {
     var repository = new RepositoryBase<Membro>();
     repository.Atualizar(membro);
 }
 
-//generico
 static void ModificarPoderFamilia(PoderDaFamilia nivel)
 {
     var repository = new RepositoryBase<PoderDaFamilia>();
     repository.Atualizar(nivel);
 }
 
-//generico
 static void ModificarArrecadacao(Arrecadacao arrecadacao)
 {
     var repository = new RepositoryBase<Arrecadacao>();
     repository.Atualizar(arrecadacao);
 }
  
-//generico
 static void ModificarArea(Area area)
 {
     var repository = new RepositoryBase<Area>();
     repository.Atualizar(area);
 }
 
-
-//não precisa mudar esses
-//atualizadoooooooooooooooooo
 static Arrecadacao ModificarArrecadacaoModelo(int id)
 {
     var arrecadado = new Arrecadacao();
@@ -699,7 +686,6 @@ static Arrecadacao ModificarArrecadacaoModelo(int id)
     return arrecadado;
 }
 
-//atualizadoooooooooooooo
 static Familia ModificarFamiliaModelo(int id)
 {
     var familia = new Familia();
@@ -710,7 +696,6 @@ static Familia ModificarFamiliaModelo(int id)
     return familia;
 }
 
-//atualizadooooooooooooo
 static Membro ModificarMembroModelo(int id)
 {
     var membro = new Membro();
@@ -725,7 +710,6 @@ static Membro ModificarMembroModelo(int id)
     return membro;
 }
 
-//atualizadoooooooooooo
 static PoderDaFamilia ModificarPoderFamiliaModelo(int id)
 {
     var poder = new PoderDaFamilia();
@@ -745,7 +729,7 @@ static Produtos ModificarProdutoModelo(int id)
     produtos.Produto = Console.ReadLine();
     return produtos;
 }
-//atualizado com repository
+
 static MeuFeudo ModificarFeudoModelo(int id)
 {
     var feudo = new MeuFeudo();
@@ -756,7 +740,6 @@ static MeuFeudo ModificarFeudoModelo(int id)
     return feudo;
 }
 
-//com repository
 static Area ModificarAreaModelo(int id)
 {
     var area = new Area();
@@ -776,8 +759,6 @@ static Area ModificarAreaModelo(int id)
     return area;
 }
 
-
-//generico
 static void DeletarMembro(int id)
 {
     var membro = new Membro();
@@ -785,7 +766,6 @@ static void DeletarMembro(int id)
     repository.Deletar(membro,id);
 }
 
-//atualizado com repository
 static void DeletarArrecadacao(int id)
 {
     var arrecadacao = new Arrecadacao();
@@ -793,7 +773,6 @@ static void DeletarArrecadacao(int id)
     repository.Deletar(arrecadacao,id);
 }
 
-//ainda não sei como fazer para deletar em sequência de modo diferente, porém tenho ideias
 static void DeletarArea(int id)
 {
     string excluir = @"DELETE Arrecadacoes
@@ -814,7 +793,6 @@ static void DeletarArea(int id)
     
 }
 
-//vai ficar aqui isolado pois mesmo motivo e situação do de cima
 static void ExtinguirFamilia(int id)
 {
     string excluir = @"DELETE Areas
@@ -842,36 +820,34 @@ static void ExtinguirFamilia(int id)
     }
 }
 
-
-//com repository. não está salvando SÓ ELE NÃO QUER SALVAR, é tudo iguaaaaaaaaaaaaaal
+//com repository. não está salvando ???
 static void SalvarProduto(Produtos produto)
 {
    var repository = new RepositoryBase<Produtos>();
    repository.Criar(produto);
 }
 
-//com repository. não está salvando SÓ ELE NÃO QUER SALVAR, é tudo iguaaaaaaaaaaaaaal
-static async Task SalvarPoder(PoderDaFamilia poder)
+//com repository. não está salvando ???
+static void SalvarPoder(PoderDaFamilia poder)
 {
     var repository = new RepositoryBase<PoderDaFamilia>();
-    await repository.Criar(poder);
+    repository.Criar(poder);
 }
 
-//com repository. não está salvando SÓ ELE NÃO QUER SALVAR, é tudo iguaaaaaaaaaaaaaal
-static async Task SalvarFeudo(MeuFeudo nome)
+//com repository. não está salvando ???
+static void SalvarFeudo(MeuFeudo nome)
 {
     var repository = new RepositoryBase<MeuFeudo>();
-    await repository.Criar(nome);
+    repository.Criar(nome);
 }
 
-//com repository. não está salvando SÓ ELE NÃO QUER SALVAR, é tudo iguaaaaaaaaaaaaaal
-static async Task SalvarFamilia(Familia nome)
+//com repository. não está salvando ???
+static void SalvarFamilia(Familia nome)
 {
     var repository = new RepositoryBase<Familia>();
-    await repository.Criar(nome);
+    repository.Criar(nome);
 }
 
-//generico
 static void SalvarMembro(Membro membro)
 {
     var repository = new RepositoryBase<Membro>();
@@ -879,21 +855,18 @@ static void SalvarMembro(Membro membro)
 
 }
 
-//atualizado com repository está cadastrando
 static void SalvarArrecadacao(Arrecadacao arrecadacao)
 {
     var repository = new RepositoryBase<Arrecadacao>();
     repository.Criar(arrecadacao);
 }
 
-//com repository está cadastrando
 static void SalvarArea(Area area)
 {
     var repository = new RepositoryBase<Area>();
     repository.Criar(area);
 }
 
-//gnerico
 static void RetornarFeudos()
 {
     var repository = new RepositoryBase<MeuFeudo>();
@@ -904,7 +877,6 @@ static void RetornarFeudos()
     
 }
 
-//Generico
 static void RetornarFamilias()
 {
     var repository = new RepositoryBase<Familia>();
@@ -913,7 +885,6 @@ static void RetornarFamilias()
         Console.WriteLine($"Nome da Família: {familias.NomeDaFamilia} ////// Identificador (ID):{familias.Id}");
 }
 
-//generico
 static void RetornarProdutos()
 {
     var repository = new RepositoryBase<Produtos>();
@@ -923,7 +894,6 @@ static void RetornarProdutos()
         
 }
 
-//generico
 static void RetornarPoderFamilia()
 {
     var repository = new RepositoryBase<PoderDaFamilia>();
@@ -932,7 +902,6 @@ static void RetornarPoderFamilia()
         Console.WriteLine($"Poder da família: {poderDasFamilias.NivelDePoder} ////// Identificador:{poderDasFamilias.Id}");
 }
 
-//generico
 static void RetornarMembros()
 {
     var repository = new RepositoryBase<Membro>();
@@ -943,7 +912,6 @@ static void RetornarMembros()
     
 }
 
-//generico
 static void RetornarAreasSeletivo()
 {
    var repository = new RepositoryBase<Area>();
@@ -952,7 +920,6 @@ static void RetornarAreasSeletivo()
             Console.WriteLine($"Nome da área: {area.NomeDaArea} ////// Identificador:{area.Id}");
 }
 
-//generico
 static void RetornarAreas()
 {
     var repository = new RepositoryBase<Area>();
@@ -961,7 +928,6 @@ static void RetornarAreas()
         Console.WriteLine($@"-----Identificador (ID): {area.Id} / Familia da área: {area.FamiliaDaArea} /  Poder da família: {area.NivelDaFamilia} Nome da área: {area.NomeDaArea} / Pertence ao feudo: {area.FeudoPertencente}");
 }
 
-//generico
 static void RetornarEstacoes()
 {
     var repository = new RepositoryBase<Estacoes>();
@@ -972,7 +938,6 @@ static void RetornarEstacoes()
     
 }
 
-//generico
 static void RetornarArrecadacao()
 {
     var repository = new RepositoryBase<Arrecadacao>();
