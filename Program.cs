@@ -631,52 +631,52 @@ static void CriarArea()
 }
 
 
-//atualizado com repository
+//generico
 static void ModificarProduto(Produtos produto)
 {
-    var repository = new ProdutoRepository();
+    var repository = new RepositoryBase<Produtos>();
     repository.Atualizar(produto);
 }
 
-//atualizado repository
+//generico
 static void ModificarFeudo(MeuFeudo nome)
 {
-    var repository = new MeuFeudoRepository();
+    var repository = new RepositoryBase<MeuFeudo>();
     repository.Atualizar(nome);
 }
 
-//atualizado repository
+//generico
 static void ModificarFamilia(Familia nomeFamilia)
 {
-    var repository = new FamiliaRepository();
+    var repository = new RepositoryBase<Familia>();
     repository.Atualizar(nomeFamilia);
 }
 
-//atualizado repository
+//generico
 static void ModificarMembro(Membro membro)
 {
-    var repository = new MembroRepository();
+    var repository = new RepositoryBase<Membro>();
     repository.Atualizar(membro);
 }
 
-//atualizado com repository
+//generico
 static void ModificarPoderFamilia(PoderDaFamilia nivel)
 {
-    var repository = new PoderDaFamiliaRepository();
+    var repository = new RepositoryBase<PoderDaFamilia>();
     repository.Atualizar(nivel);
 }
 
-//Atualizadoooooooooooo
+//generico
 static void ModificarArrecadacao(Arrecadacao arrecadacao)
 {
-    var repository = new ArrecadacaoRepository();
+    var repository = new RepositoryBase<Arrecadacao>();
     repository.Atualizar(arrecadacao);
 }
  
-//Atualizadoooooooooooooooooooo
+//generico
 static void ModificarArea(Area area)
 {
-    var repository = new AreaRepository();
+    var repository = new RepositoryBase<Area>();
     repository.Atualizar(area);
 }
 
@@ -777,21 +777,23 @@ static Area ModificarAreaModelo(int id)
 }
 
 
-//atualizado para repository
+//generico
 static void DeletarMembro(int id)
 {
-    var repository = new MembroRepository();
-    repository.Deletar(id);
+    var membro = new Membro();
+    var repository = new RepositoryBase<Membro>();
+    repository.Deletar(membro,id);
 }
 
 //atualizado com repository
 static void DeletarArrecadacao(int id)
 {
-    var repository = new ArrecadacaoRepository();
-    repository.Deletar(id);
+    var arrecadacao = new Arrecadacao();
+    var repository = new RepositoryBase<Arrecadacao>();
+    repository.Deletar(arrecadacao,id);
 }
 
-//ainda não sei como fazer para deletar em sequência, porém tenho ideias
+//ainda não sei como fazer para deletar em sequência de modo diferente, porém tenho ideias
 static void DeletarArea(int id)
 {
     string excluir = @"DELETE Arrecadacoes
@@ -844,35 +846,35 @@ static void ExtinguirFamilia(int id)
 //com repository. não está salvando SÓ ELE NÃO QUER SALVAR, é tudo iguaaaaaaaaaaaaaal
 static void SalvarProduto(Produtos produto)
 {
-   var repository = new ProdutoRepository();
+   var repository = new RepositoryBase<Produtos>();
    repository.Criar(produto);
 }
 
 //com repository. não está salvando SÓ ELE NÃO QUER SALVAR, é tudo iguaaaaaaaaaaaaaal
-static void SalvarPoder(PoderDaFamilia poder)
+static async Task SalvarPoder(PoderDaFamilia poder)
 {
-    var repository = new PoderDaFamiliaRepository();
-    repository.Criar(poder);
+    var repository = new RepositoryBase<PoderDaFamilia>();
+    await repository.Criar(poder);
 }
 
 //com repository. não está salvando SÓ ELE NÃO QUER SALVAR, é tudo iguaaaaaaaaaaaaaal
-static void SalvarFeudo(MeuFeudo nome)
+static async Task SalvarFeudo(MeuFeudo nome)
 {
-    var repository = new MeuFeudoRepository();
-    repository.Criar(nome);
+    var repository = new RepositoryBase<MeuFeudo>();
+    await repository.Criar(nome);
 }
 
 //com repository. não está salvando SÓ ELE NÃO QUER SALVAR, é tudo iguaaaaaaaaaaaaaal
-static void SalvarFamilia(Familia nome)
+static async Task SalvarFamilia(Familia nome)
 {
-    var repository = new FamiliaRepository();
-    repository.Criar(nome);
+    var repository = new RepositoryBase<Familia>();
+    await repository.Criar(nome);
 }
 
-//atualizado com repository está cadastrando
+//generico
 static void SalvarMembro(Membro membro)
 {
-    var repository = new MembroRepository();
+    var repository = new RepositoryBase<Membro>();
     repository.Criar(membro);
 
 }
@@ -880,21 +882,21 @@ static void SalvarMembro(Membro membro)
 //atualizado com repository está cadastrando
 static void SalvarArrecadacao(Arrecadacao arrecadacao)
 {
-    var repository = new ArrecadacaoRepository();
+    var repository = new RepositoryBase<Arrecadacao>();
     repository.Criar(arrecadacao);
 }
 
 //com repository está cadastrando
 static void SalvarArea(Area area)
 {
-    var repository = new AreaRepository();
+    var repository = new RepositoryBase<Area>();
     repository.Criar(area);
 }
 
-//atualizado no repository
+//gnerico
 static void RetornarFeudos()
 {
-    var repository = new MeuFeudoRepository();
+    var repository = new RepositoryBase<MeuFeudo>();
     var feudos = repository.TrazerTodos();
     foreach(var feudo in feudos)
             Console.WriteLine($"Feudo: {feudo.Nome} ////// Identificador (ID):{feudo.Id}");
@@ -902,70 +904,64 @@ static void RetornarFeudos()
     
 }
 
-//atualizado no repository
+//Generico
 static void RetornarFamilias()
 {
-    var repository = new FamiliaRepository();
+    var repository = new RepositoryBase<Familia>();
     var familia = repository.TrazerTodos();
     foreach (var familias in familia)
         Console.WriteLine($"Nome da Família: {familias.NomeDaFamilia} ////// Identificador (ID):{familias.Id}");
 }
 
-//atualizado no repository
+//generico
 static void RetornarProdutos()
 {
-    var repository = new ProdutoRepository();
+    var repository = new RepositoryBase<Produtos>();
     var produtos = repository.TrazerTodos();
     foreach (var produto in produtos)
             Console.WriteLine($"Nome: {produto.Produto} ////// Identificador:{produto.Id}");
         
 }
 
-//atualizado
+//generico
 static void RetornarPoderFamilia()
 {
-    using (var conexaoBD = new SqlConnection(connectionString))
-    {
-        var poder = conexaoBD.Query<PoderDaFamilia>("SELECT [ID] AS [Id], [NivelDePoder] AS [NivelDePoder] FROM PoderDaFamilia");
-    
-        foreach (var poderDasFamilias in poder)
-        {
-            Console.WriteLine($"Poder da família: {poderDasFamilias.NivelDePoder} ////// Identificador:{poderDasFamilias.Id}");
-        }
-    }
+    var repository = new RepositoryBase<PoderDaFamilia>();
+    var poder = repository.TrazerTodos();
+    foreach (var poderDasFamilias in poder)
+        Console.WriteLine($"Poder da família: {poderDasFamilias.NivelDePoder} ////// Identificador:{poderDasFamilias.Id}");
 }
 
-//no repository
+//generico
 static void RetornarMembros()
 {
-    var repository = new MembroRepository();
+    var repository = new RepositoryBase<Membro>();
     var membro = repository.TrazerTodos();
-    
-        foreach (var membros in membro)
-            Console.WriteLine($"Nome: {membros.Nome} ////// Identificador:{membros.Id}");
+    foreach (var membros in membro)
+        Console.WriteLine($"Nome: {membros.Nome} ////// Identificador:{membros.Id}");
         
     
 }
 
-//atualizado com repository
+//generico
 static void RetornarAreasSeletivo()
 {
-   var repository = new AreaRepository();
+   var repository = new RepositoryBase<Area>();
     var areas = repository.TrazerTodos();
     foreach (var area in areas)
             Console.WriteLine($"Nome da área: {area.NomeDaArea} ////// Identificador:{area.Id}");
 }
 
-//atualizado com repository
+//generico
 static void RetornarAreas()
 {
-    var repository = new AreaRepository();
+    var repository = new RepositoryBase<Area>();
     var areas = repository.TrazerTodos();
     foreach (var area in areas)
         Console.WriteLine($@"-----Identificador (ID): {area.Id} / Familia da área: {area.FamiliaDaArea} /  Poder da família: {area.NivelDaFamilia} Nome da área: {area.NomeDaArea} / Pertence ao feudo: {area.FeudoPertencente}");
 }
 
-//atualizado com repository
+//generico
 static void RetornarEstacoes()
 {
     var repository = new RepositoryBase<Estacoes>();
@@ -976,7 +972,7 @@ static void RetornarEstacoes()
     
 }
 
-//atualizado com repository
+//generico
 static void RetornarArrecadacao()
 {
     var repository = new RepositoryBase<Arrecadacao>();

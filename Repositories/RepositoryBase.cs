@@ -3,7 +3,7 @@
 using Dapper.Contrib.Extensions;
 using Microsoft.Data.SqlClient;
 
-public class RepositoryBase<T> where T : BaseClass
+public class RepositoryBase<T> where T : class
 {
    protected SqlConnection _connection = new SqlConnection("Server=DESKTOP-7V86B4M;Database=MeuFeudo;Integrated Security=True;TrustServerCertificate=True");
    public virtual async Task Criar(T entity)
@@ -31,7 +31,7 @@ public class RepositoryBase<T> where T : BaseClass
       }
    }
    //testar se funciona, se funcionar duplicar o parametro generico e deletar em sequencia
-   public virtual async Task<bool> Deletar(T entity, int id)
+   public async Task<bool> Deletar(T entity, int id)
    {
       var delete = _connection.Get<T>(id);
       try
