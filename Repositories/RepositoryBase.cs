@@ -5,8 +5,8 @@ using Microsoft.Data.SqlClient;
 
 public class RepositoryBase<T> where T : BaseClass
 {
-   private SqlConnection _connection = new SqlConnection("Server=DESKTOP-7V86B4M;Database=MeuFeudo;Integrated Security=True;TrustServerCertificate=True");
-   public async Task Criar(T entity)
+   protected SqlConnection _connection = new SqlConnection("Server=DESKTOP-7V86B4M;Database=MeuFeudo;Integrated Security=True;TrustServerCertificate=True");
+   public virtual async Task Criar(T entity)
    {
        try
       {
@@ -18,7 +18,7 @@ public class RepositoryBase<T> where T : BaseClass
          Console.WriteLine($"Digitou errado, veja: {e.Message}");
       }
    }
-   public async Task Atualizar(T entity)
+   public virtual async Task Atualizar(T entity)
    {
       try
       {
@@ -30,7 +30,7 @@ public class RepositoryBase<T> where T : BaseClass
         Console.WriteLine($"Digitou errado, veja: {e.Message}");
       }
    }
-   //testar se funciona
+   //testar se funciona, se funcionar duplicar o parametro generico e deletar em sequencia
    public virtual async Task<bool> Deletar(T entity, int id)
    {
       var delete = _connection.Get<T>(id);

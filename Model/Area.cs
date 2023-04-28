@@ -1,3 +1,6 @@
+using Dapper.Contrib.Extensions;
+
+[Table("[Areas]")]
 public class Area : BaseClass
 {
     // public int Id{get;set;}
